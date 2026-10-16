@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Snap11 logo: a screen split into thirds. The left third is snapped
+       (accent), the others wait for Snap Assist; the pill on top is the
+       snap layout bar. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2e38"/>
+      <stop offset="1" stop-color="#14161b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5ad1ff"/>
+      <stop offset="1" stop-color="#6c5cf0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background tile -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bg)"/>
+  <rect x="17" y="17" width="478" height="478" rx="111" fill="none"
+        stroke="#ffffff" stroke-opacity="0.10" stroke-width="2"/>
+
+  <!-- Layout bar -->
+  <rect x="176" y="84" width="160" height="26" rx="13" fill="#ffffff" fill-opacity="0.85"/>
+
+  <!-- Snapped third -->
+  <rect x="96" y="140" width="96" height="288" rx="22" fill="url(#accent)"/>
+
+  <!-- Free thirds, waiting for Snap Assist -->
+  <rect x="210" y="140" width="96" height="288" rx="22" fill="#ffffff" fill-opacity="0.16"
+        stroke="#ffffff" stroke-opacity="0.45" stroke-width="4" stroke-dasharray="14 10"/>
+  <rect x="324" y="140" width="96" height="288" rx="22" fill="#ffffff" fill-opacity="0.16"
+        stroke="#ffffff" stroke-opacity="0.45" stroke-width="4" stroke-dasharray="14 10"/>
+</svg>

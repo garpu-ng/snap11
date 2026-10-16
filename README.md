@@ -1,7 +1,13 @@
-# Snap11
+<p align="center">
+  <img src="assets/logo.svg" alt="Snap11 logo" width="128" height="128">
+</p>
 
-Windows 11 style window snapping for KDE Plasma 6, made for the mouse.
-No modifier key to hold, no shortcuts to learn.
+<h1 align="center">Snap11</h1>
+
+<p align="center">
+  Windows 11 style window snapping for KDE Plasma 6, made for the mouse.<br>
+  No modifier key to hold, no shortcuts to learn.
+</p>
 
 ![Snap layout bar: drag a window to the top edge and drop it on a slot](docs/layout-bar.png)
 

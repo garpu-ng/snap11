@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 1280 640" width="1280" height="640">
+  <!-- GitHub social preview. Render: rsvg-convert assets/social-preview.svg -o assets/social-preview.png -->
+  <defs>
+    <linearGradient id="page" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d2028"/>
+      <stop offset="1" stop-color="#0f1014"/>
+    </linearGradient>
+    <linearGradient id="accentText" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5ad1ff"/>
+      <stop offset="1" stop-color="#6c5cf0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#page)"/>
+  <image href="logo.svg" x="120" y="160" width="320" height="320"/>
+  <text x="510" y="300" font-family="Noto Sans, Inter, sans-serif" font-size="112" font-weight="700" fill="#ffffff">Snap<tspan fill="url(#accentText)">11</tspan></text>
+  <text x="514" y="370" font-family="Noto Sans, Inter, sans-serif" font-size="34" fill="#c9ccd4">Windows 11 style window snapping</text>
+  <text x="514" y="418" font-family="Noto Sans, Inter, sans-serif" font-size="34" fill="#c9ccd4">for KDE Plasma 6, made for the mouse</text>
+</svg>
