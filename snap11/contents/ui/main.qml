@@ -162,7 +162,7 @@ Item {
         const cands = candidatesFor(assistPlaced, slot.output);
         log("assist for next slot, " + cands.length + " candidates, " + assistQueue.length + " slots after this");
         if (cands.length > 0)
-            assist.open(slot, cands);
+            openAssist(slot, cands);
         else
             assistQueue = [];
     }
@@ -438,7 +438,9 @@ Item {
                 if (ok && !all[i].minimized)
                     anchor = all[i];
             }
-            if (anchor)
+            // Only the demo moves windows; the plain self test leaves the
+            // user's windows alone.
+            if (anchor && root.demoClasses.length > 0)
                 root.place(anchor, { "rect": h.left, "quickTile": "left" });
             selfTestAssistOpenTimer.anchor = anchor;
             selfTestAssistOpenTimer.start();
@@ -452,7 +454,7 @@ Item {
         interval: 400
         onTriggered: {
             const h = root.halves(root.workArea(root.selfTestScreen()));
-            assist.open({ "rect": h.right, "quickTile": "right" },
+            root.openAssist({ "rect": h.right, "quickTile": "right" },
                         root.selfTestCandidates(anchor ? [anchor] : []));
             selfTestEndTimer.start();
         }
@@ -471,6 +473,11 @@ Item {
     LayoutBar {
         id: bar
         cfg: cfg
+    }
+
+    ClickCatcher {
+        id: catcher
+        onClicked: function(pos) { root.catcherClicked(pos); }
     }
 
     // Plain and blurred variants of the overlays; the options pick one.
@@ -510,8 +517,35 @@ Item {
             assistNextTimer.restart();
     }
 
+    // Show the click catcher first, so the picker (shown second) is
+    // stacked above it.
+    function openAssist(slot, cands) {
+        catcher.showAll();
+        assist.open(slot, cands);
+    }
+
+    // A click outside the picker: close it, stop the chain, and give the
+    // click's target window the focus, as the click itself was swallowed.
+    function catcherClicked(pos) {
+        assist.dismiss("clicked elsewhere");
+        root.assistQueue = [];
+        const stack = Workspace.stackingOrder;
+        for (let i = stack.length - 1; i >= 0; i--) {
+            const w = stack[i];
+            const g = w.frameGeometry;
+            if (!isNormal(w) || w.minimized || w.pid <= 0 || !onCurrentDesktop(w))
+                continue;
+            if (pos.x >= g.x && pos.x < g.x + g.width && pos.y >= g.y && pos.y < g.y + g.height) {
+                Workspace.activeWindow = w;
+                break;
+            }
+        }
+    }
+
     // Closed without picking (Escape, click outside): stop the chain.
     function assistVisibleChanged(visible) {
+        if (!visible)
+            catcher.hide();
         if (!visible && !assistNextTimer.running)
             Qt.callLater(function() {
                 if (!assist.visible && !assistNextTimer.running)
@@ -527,6 +561,24 @@ Item {
         function onWindowRemoved(w) {
             root.refreshWatched();
         }
+        function onWindowActivated(w) {
+            root.windowActivated(w);
+        }
+    }
+
+    // A click anywhere else (another window, the desktop) activates that
+    // window: close the picker and stop filling further slots. The picker
+    // often never gets focus itself, so its own focus-out cannot be relied
+    // on. Right after opening, KWin may still re-activate the dragged
+    // window, hence the grace period.
+    function windowActivated(w) {
+        if (!assist.visible)
+            return;
+        if (w && w.pid <= 0)
+            return; // one of our own overlays
+        if (Date.now() - assist.openedAt < assist.focusGraceMs)
+            return;
+        assist.dismiss("clicked elsewhere");
     }
 
     // Re-read the options when they are changed in System Settings.

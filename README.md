@@ -11,7 +11,7 @@ No modifier key to hold, no shortcuts to learn.
 
 **Snap Assist.** Drag a window to the left or right screen edge. It snaps to
 that half, and the free half fills with thumbnails of your other windows.
-Click one and it takes the other half. Escape or a click on empty space
+Click one and it takes the other half. Escape or a click anywhere else
 closes the picker.
 
 **Snap layout bar.** Drag a window to the top edge. A small bar with layouts
