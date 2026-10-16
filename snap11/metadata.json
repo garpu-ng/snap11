@@ -1,0 +1,23 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "garpu_ng"
+            }
+        ],
+        "Category": "Window Management",
+        "Description": "Windows 11 style window snapping: Snap Assist with window thumbnails and a snap layout bar at the top edge",
+        "EnabledByDefault": false,
+        "Icon": "preferences-system-windows-effect",
+        "Id": "snap11",
+        "License": "MIT",
+        "Name": "Snap11",
+        "Version": "1.0.0"
+    },
+    "X-Plasma-API": "declarativescript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "ui/main.qml",
+    "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted",
+    "X-KDE-PluginKeyword": "snap11"
+}
