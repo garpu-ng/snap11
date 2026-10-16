@@ -11,8 +11,9 @@ No modifier key to hold, no shortcuts to learn.
 
 **Snap Assist.** Drag a window to the left or right screen edge. It snaps to
 that half, and the free half fills with thumbnails of your other windows.
-Click one and it takes the other half. Escape or a click anywhere else
-closes the picker.
+Click one and it takes the other half. Hovering a thumbnail highlights it
+and shows a close button, like in Windows; arrow keys and Enter work too.
+Escape or a click anywhere else closes the picker.
 
 **Snap layout bar.** Drag a window to the top edge. A small bar with layouts
 (halves and thirds) appears at the top center. Move over the slot where the
@@ -24,8 +25,9 @@ and it is maximized, just like in Plasma and Windows.
 
 Also:
 
-- Works across multiple monitors. Windows from another screen move over
-  when you pick them.
+- Works across multiple monitors, including the edges where two monitors
+  meet (KDE itself only snaps at the outer edges). Windows from another
+  screen move over when you pick them.
 - Halves use KDE's own quick tiling, so the shared resize handle between
   two tiled windows keeps working.
 - Blur behind the drop outline and the window picker.
@@ -46,7 +48,7 @@ for "Snap11" > Install. Then tick Snap11 and click Apply.
 **From a release file:**
 
 ```bash
-kpackagetool6 --type KWin/Script --install snap11-1.0.0.kwinscript
+kpackagetool6 --type KWin/Script --install snap11-1.1.0.kwinscript
 ```
 
 Then enable it under System Settings > Window Management > KWin Scripts.
@@ -54,7 +56,7 @@ Then enable it under System Settings > Window Management > KWin Scripts.
 **Update an existing install:**
 
 ```bash
-kpackagetool6 --type KWin/Script --upgrade snap11-1.0.0.kwinscript
+kpackagetool6 --type KWin/Script --upgrade snap11-1.1.0.kwinscript
 ```
 
 Log out and back in after an update. KWin keeps the old version in memory
@@ -93,8 +95,6 @@ button.
 ## Known limits
 
 - Only tested on Wayland. Plasma 6.6 on X11 is untested.
-- Between two monitors, the shared inner edge does not trigger KDE's edge
-  snapping, so Snap Assist does not open there. Use the layout bar instead.
 - No snap groups yet (minimizing or resizing a group of snapped windows
   together).
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 (2026-10-16)
+
+- Snap at the edges between two monitors too. KDE only snaps at the outer
+  screen edges; Snap11 now adds a small snap zone where monitors meet
+  (options: on/off, zone width).
+- Window picker cards behave like in Windows 11: icon and title on top,
+  hover highlights the card and shows a close button, arrow keys and
+  Enter work.
+
 ## 1.0.0 (2026-10-16)
 
 First release.

@@ -9,6 +9,12 @@
     <entry name="EdgeAssist" type="Bool">
       <default>true</default>
     </entry>
+    <entry name="InnerEdgeSnap" type="Bool">
+      <default>true</default>
+    </entry>
+    <entry name="InnerEdgeWidth" type="Int">
+      <default>10</default>
+    </entry>
     <entry name="LayoutBar" type="Bool">
       <default>true</default>
     </entry>

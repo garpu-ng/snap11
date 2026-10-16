@@ -11,6 +11,8 @@ import org.kde.kwin
 QtObject {
     // Behavior
     property bool edgeAssist: true
+    property bool innerEdgeSnap: true
+    property int innerEdgeWidth: 10
     property bool layoutBar: true
     property bool layoutHalves: true
     property bool layoutThirds: true
@@ -54,6 +56,8 @@ QtObject {
 
     function load() {
         edgeAssist = KWin.readConfig("EdgeAssist", true);
+        innerEdgeSnap = KWin.readConfig("InnerEdgeSnap", true);
+        innerEdgeWidth = KWin.readConfig("InnerEdgeWidth", 10);
         layoutBar = KWin.readConfig("LayoutBar", true);
         layoutHalves = KWin.readConfig("LayoutHalves", true);
         layoutThirds = KWin.readConfig("LayoutThirds", true);

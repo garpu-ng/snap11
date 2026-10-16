@@ -55,6 +55,9 @@ Item {
     // the work area of that screen.
     property bool topActive: false
     property rect topArea: Qt.rect(0, 0, 0, 0)
+    // The cursor sits in the snap zone at an inner screen edge (where two
+    // monitors meet): { slot, others }, or null.
+    property var edgeArmed: null
 
     // Snap Assist chain: slots still to fill, and windows already placed
     // (they are not offered again).
@@ -217,6 +220,22 @@ Item {
             return;
         const p = Workspace.cursorPos;
         const atTop = p.y <= screenArea(w.output).y + topTrigger;
+        // Inner screen edges: KDE only snaps at the outer edges, so handle
+        // the edges between monitors here. The top edge takes priority.
+        if (!atTop && !topActive) {
+            const edge = innerEdgeAt(p);
+            if (edge) {
+                if (!edgeArmed || edgeArmed.slot.output !== edge.slot.output
+                        || edgeArmed.slot.quickTile !== edge.slot.quickTile)
+                    outline.showAt(edge.slot.rect);
+                edgeArmed = edge;
+                return;
+            }
+        }
+        if (edgeArmed) {
+            edgeArmed = null;
+            outline.hide();
+        }
         if (!topActive) {
             if (!atTop)
                 return;
@@ -245,6 +264,58 @@ Item {
             bar.bringToFront();
     }
 
+    function screenAt(p) {
+        const screens = Workspace.screens;
+        for (let i = 0; i < screens.length; i++) {
+            const g = screens[i].geometry;
+            if (p.x >= g.x && p.x < g.x + g.width && p.y >= g.y && p.y < g.y + g.height)
+                return screens[i];
+        }
+        return null;
+    }
+
+    // Is there another screen right next to s on that side, at height y?
+    function hasNeighbour(s, side, y) {
+        const g = s.geometry;
+        const screens = Workspace.screens;
+        for (let i = 0; i < screens.length; i++) {
+            if (screens[i] === s)
+                continue;
+            const o = screens[i].geometry;
+            if (y < o.y || y >= o.y + o.height)
+                continue;
+            if (side === "left" && Math.abs(o.x + o.width - g.x) <= 1)
+                return true;
+            if (side === "right" && Math.abs(o.x - (g.x + g.width)) <= 1)
+                return true;
+        }
+        return false;
+    }
+
+    // Snap target when p is in the zone along an inner edge, else null.
+    function innerEdgeAt(p) {
+        if (!cfg.innerEdgeSnap)
+            return null;
+        const s = screenAt(p);
+        if (!s)
+            return null;
+        const g = s.geometry;
+        const zone = cfg.innerEdgeWidth;
+        let side = "";
+        if (p.x < g.x + zone && hasNeighbour(s, "left", p.y))
+            side = "left";
+        else if (p.x >= g.x + g.width - zone && hasNeighbour(s, "right", p.y))
+            side = "right";
+        if (!side)
+            return null;
+        const h = halves(workArea(s));
+        const other = side === "left" ? "right" : "left";
+        return {
+            "slot": { "rect": h[side], "quickTile": side, "output": s },
+            "others": [{ "rect": h[other], "quickTile": other, "output": s }]
+        };
+    }
+
     function endTop() {
         topActive = false;
         maximizeArmed = false;
@@ -271,10 +342,15 @@ Item {
         } else if (topActive && root.maximizeArmed) {
             root.pendingDrop = { "window": w, "maximize": true };
             dropTimer.restart();
+        } else if (edgeArmed) {
+            root.pendingDrop = { "window": w, "slot": edgeArmed.slot, "others": edgeArmed.others,
+                                 "edge": true };
+            dropTimer.restart();
         } else {
             root.pendingWindow = w;
             settleTimer.restart();
         }
+        edgeArmed = null;
         endTop();
     }
 
@@ -325,7 +401,7 @@ Item {
                 return;
             }
             root.place(d.window, d.slot);
-            if (cfg.assistAfterBarDrop)
+            if (d.edge ? cfg.edgeAssist : cfg.assistAfterBarDrop)
                 root.startAssist(d.others, [d.window]);
         }
     }
@@ -456,6 +532,7 @@ Item {
             const h = root.halves(root.workArea(root.selfTestScreen()));
             root.openAssist({ "rect": h.right, "quickTile": "right" },
                         root.selfTestCandidates(anchor ? [anchor] : []));
+            assist.currentIndex = 0; // show the hover look
             selfTestEndTimer.start();
         }
     }
@@ -576,7 +653,8 @@ Item {
             return;
         if (w && w.pid <= 0)
             return; // one of our own overlays
-        if (Date.now() - assist.openedAt < assist.focusGraceMs)
+        if (Date.now() - assist.openedAt < assist.focusGraceMs
+                || Date.now() < assist.ignoreActivationUntil)
             return;
         assist.dismiss("clicked elsewhere");
     }

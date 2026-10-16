@@ -39,11 +39,45 @@ PlasmaCore.Dialog {
                                             slotWidth - 2 * outerMargin - 2 * gap,
                                             slotHeight - 2 * outerMargin - 2 * gap)
 
+    // Closing a window from a card makes KWin activate another one; that
+    // must not count as "clicked elsewhere" (see main.qml windowActivated).
+    property double ignoreActivationUntil: 0
+
+    // Card selected by hover or keyboard, -1 for none.
+    property int currentIndex: -1
+
     signal picked(var window, var slot)
+
+    function moveSelection(step) {
+        const n = candidates.length;
+        if (n === 0)
+            return;
+        if (currentIndex < 0)
+            currentIndex = step < 0 ? n - 1 : 0;
+        else
+            currentIndex = Math.max(0, Math.min(n - 1, currentIndex + step));
+    }
+
+    function pickSelected() {
+        if (currentIndex >= 0 && currentIndex < candidates.length)
+            picked(candidates[currentIndex], slot);
+    }
+
+    // Close a window from its card (the X button), like in Windows.
+    function closeCandidate(w) {
+        console.info("snap11: closing '" + w.caption + "' from the picker");
+        ignoreActivationUntil = Date.now() + 1000;
+        w.closeWindow();
+        candidates = candidates.filter(function(c) { return c !== w; });
+        currentIndex = Math.min(currentIndex, candidates.length - 1);
+        if (candidates.length === 0)
+            dismiss("no windows left");
+    }
 
     function open(s, c) {
         slot = s;
         candidates = c;
+        currentIndex = -1;
         slotWidth = s.rect.width;
         slotHeight = s.rect.height;
         openedAt = Date.now();
@@ -134,6 +168,14 @@ PlasmaCore.Dialog {
             anchors.fill: parent
             focus: true
             Keys.onEscapePressed: assist.dismiss("escape")
+            Keys.onLeftPressed: assist.moveSelection(-1)
+            Keys.onRightPressed: assist.moveSelection(1)
+            Keys.onUpPressed: assist.moveSelection(-assist.grid.cols)
+            Keys.onDownPressed: assist.moveSelection(assist.grid.cols)
+            Keys.onTabPressed: assist.moveSelection(1)
+            Keys.onBacktabPressed: assist.moveSelection(-1)
+            Keys.onReturnPressed: assist.pickSelected()
+            Keys.onEnterPressed: assist.pickSelected()
 
             Grid {
                 anchors.centerIn: parent
@@ -143,22 +185,54 @@ PlasmaCore.Dialog {
                 Repeater {
                     model: assist.candidates
 
+                    // One window, Windows 11 style: icon and title on top,
+                    // thumbnail below. Hover (or the keyboard) selects it; a
+                    // selected card is lit and shows a close button.
                     delegate: Rectangle {
                         id: card
 
                         required property var modelData
+                        required property int index
+                        readonly property bool selected: assist.currentIndex === index
                         readonly property int thumbHeight: Math.round(width * assist.thumbRatio)
+                        readonly property color hl: assist.cfg.highlightColor
 
                         width: assist.grid.cardWidth
                         height: thumbHeight + assist.labelHeight
                         radius: Math.round(assist.cfg.cornerRadius * 5 / 6)
-                        color: mouse.containsMouse ? Qt.rgba(1, 1, 1, 0.16) : Qt.rgba(1, 1, 1, 0.06)
-                        border.color: mouse.containsMouse ? Kirigami.Theme.highlightColor : "transparent"
+                        color: selected ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(1, 1, 1, 0.06)
+                        border.color: selected ? Qt.rgba(hl.r, hl.g, hl.b, 0.9) : "transparent"
                         border.width: 2
+
+                        Behavior on color {
+                            ColorAnimation { duration: 120 }
+                        }
+
+                        // Header: icon and title.
+                        Row {
+                            x: 10
+                            y: Math.round((assist.labelHeight - 18) / 2) + 2
+                            width: parent.width - 20 - (closeButton.visible ? closeButton.width + 4 : 0)
+                            spacing: 6
+
+                            Kirigami.Icon {
+                                width: 18
+                                height: 18
+                                source: card.modelData.icon
+                            }
+
+                            Text {
+                                width: parent.width - 24
+                                text: card.modelData.caption
+                                color: "white"
+                                elide: Text.ElideRight
+                                font.pixelSize: 13
+                            }
+                        }
 
                         Item {
                             x: 8
-                            y: 8
+                            y: assist.labelHeight
                             width: parent.width - 16
                             height: card.thumbHeight - 8
 
@@ -178,33 +252,39 @@ PlasmaCore.Dialog {
                             }
                         }
 
-                        Row {
-                            x: 10
-                            y: card.thumbHeight + 4
-                            width: parent.width - 20
-                            spacing: 6
-
-                            Kirigami.Icon {
-                                width: 18
-                                height: 18
-                                source: card.modelData.icon
-                            }
-
-                            Text {
-                                width: parent.width - 24
-                                text: card.modelData.caption
-                                color: "white"
-                                elide: Text.ElideRight
-                                font.pixelSize: 13
-                            }
-                        }
-
                         MouseArea {
-                            id: mouse
-
                             anchors.fill: parent
                             hoverEnabled: true
+                            onEntered: assist.currentIndex = card.index
                             onClicked: assist.picked(card.modelData, assist.slot)
+                        }
+
+                        // Close button, top right, only on the selected card.
+                        Rectangle {
+                            id: closeButton
+
+                            width: 24
+                            height: 24
+                            x: parent.width - width - 6
+                            y: Math.round((assist.labelHeight - height) / 2) + 2
+                            radius: 6
+                            visible: card.selected
+                            color: closeMouse.containsMouse ? "#c42b1c" : Qt.rgba(1, 1, 1, 0.12)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "\u2715"
+                                color: "white"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: closeMouse
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: assist.closeCandidate(card.modelData)
+                            }
                         }
                     }
                 }
