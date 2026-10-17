@@ -21,8 +21,12 @@ ROOT = Path(__file__).resolve().parent.parent / "snap11" / "contents"
 #   type: Bool | Int | Color
 #   extra for Int: (min, max, suffix)
 # A group with "toggle" is a checkable group box bound to that Bool key.
+# A group with "warning" is just an orange note, no box.
 OPTIONS = [
     ("Behavior", [
+        {"warning": "Important: turn off KDE's own edge snapping, or both will show. "
+                    "System Settings > Screen Edges: turn off \"Maximize: Drag windows to top "
+                    "edge\" and \"Tile: Drag windows to the left or right edge\"."},
         {"title": "Snap Assist after edge snapping", "toggle": ("EdgeAssist", True),
          "text": "Drag a window to the left or right screen edge. The other windows "
                  "then show up as thumbnails in the free half.",
@@ -96,7 +100,7 @@ def write_schema():
             if "toggle" in g:
                 key, default = g["toggle"]
                 entries.append((key, "Bool", default))
-            for key, typ, default, _, _ in g["options"]:
+            for key, typ, default, _, _ in g.get("options", []):
                 entries.append((key, typ, default))
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -164,6 +168,14 @@ class Ui:
         self.add(d, '</layout>')
 
     def group(self, d, g):
+        if "warning" in g:
+            self.add(d, f'<widget class="QLabel" name="{self.name("warning")}">')
+            self.prop(d + 1, "text", "string", escape(g["warning"]))
+            self.prop(d + 1, "wordWrap", "bool", "true")
+            # Breeze's orange ("neutral" text color), bold so it stands out.
+            self.prop(d + 1, "styleSheet", "string", "color: #f67400; font-weight: bold;")
+            self.add(d, '</widget>')
+            return
         if "toggle" in g:
             key, _ = g["toggle"]
             self.add(d, f'<widget class="QGroupBox" name="kcfg_{key}">')

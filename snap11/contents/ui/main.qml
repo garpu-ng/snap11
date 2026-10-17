@@ -773,18 +773,36 @@ Item {
         assist.dismiss("clicked elsewhere");
     }
 
-    // Re-read the options when they are changed in System Settings.
+    // Re-read the options when they are changed in System Settings; that
+    // is also when KDE's own edge options may have been switched.
     Connections {
         target: Options
         function onConfigChanged() {
             cfg.load();
             root.log("options reloaded");
+            root.checkConflict();
         }
+    }
+
+    ConflictNotice {
+        id: conflictNotice
+    }
+
+    // KDE's own "drag to top edge maximizes" and "drag to side tiles" would
+    // show their own outline next to ours. Warn while either is on.
+    function checkConflict() {
+        const maximize = Options.electricBorderMaximize && cfg.maximizeAtTop;
+        const tiling = Options.electricBorderTiling && (cfg.outerEdgeSnap || cfg.innerEdgeSnap);
+        if (maximize || tiling)
+            log("KDE edge snapping still on: maximize=" + Options.electricBorderMaximize
+                + " tiling=" + Options.electricBorderTiling);
+        conflictNotice.update(workArea(selfTestScreen()), maximize, tiling);
     }
 
     Component.onCompleted: {
         cfg.load();
         refreshWatched();
+        checkConflict();
         log("loaded, watching " + watched.length + " windows");
         if (selfTest)
             selfTestTimer.start();

@@ -55,7 +55,7 @@ for "Snap11" > Install. Then tick Snap11 and click Apply.
 **From a release file:**
 
 ```bash
-kpackagetool6 --type KWin/Script --install snap11-1.2.0.kwinscript
+kpackagetool6 --type KWin/Script --install snap11-1.2.1.kwinscript
 ```
 
 Then enable it under System Settings > Window Management > KWin Scripts.
@@ -63,7 +63,7 @@ Then enable it under System Settings > Window Management > KWin Scripts.
 **Update an existing install:**
 
 ```bash
-kpackagetool6 --type KWin/Script --upgrade snap11-1.2.0.kwinscript
+kpackagetool6 --type KWin/Script --upgrade snap11-1.2.1.kwinscript
 ```
 
 Log out and back in after an update. KWin keeps the old version in memory
@@ -72,7 +72,8 @@ until then.
 ### Two settings to change
 
 Plasma has its own edge snapping with its own look. Turn it off so Snap11
-takes over the edges (it maximizes and tiles by itself):
+takes over the edges (it maximizes and tiles by itself). While it is still
+on, Snap11 shows a notice in the bottom right corner.
 
 System Settings > Screen Edges > turn off **"Maximize: Drag windows to top
 edge"** and **"Tile: Drag windows to the left or right edge"**.

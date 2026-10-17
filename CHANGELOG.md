@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1 (2026-10-17)
+
+- Warn when KDE's own edge snapping is still on: a notice in the bottom
+  right corner (goes away by itself once it is off; the X hides it until
+  the next login), and an orange note at the top of the settings page.
+
 ## 1.2.0 (2026-10-17)
 
 - Snap11 now handles the outer screen edges itself too, with its own
