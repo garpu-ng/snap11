@@ -24,28 +24,47 @@
                 </widget>
               </item>
               <item>
-                <widget class="QGroupBox" name="kcfg_InnerEdgeSnap">
-                  <property name="checkable"><bool>true</bool></property>
-                  <property name="title"><string>Snap at the edges between monitors</string></property>
-                  <layout class="QVBoxLayout" name="vbox_5">
+                <widget class="QGroupBox" name="group_5">
+                  <property name="title"><string>Edge snapping</string></property>
+                  <layout class="QVBoxLayout" name="vbox_6">
                     <item>
-                      <widget class="QLabel" name="label_6">
-                        <property name="text"><string>KDE only snaps at the outer screen edges. With this on, stopping close to an edge where two monitors meet snaps the window to that half too.</string></property>
+                      <widget class="QLabel" name="label_7">
+                        <property name="text"><string>Snap11 snaps windows dragged to the left or right screen edge itself, with its own outline. For that, turn off KDE's own edge tiling (System Settings &gt; Screen Edges), or both will show.</string></property>
                         <property name="wordWrap"><bool>true</bool></property>
                       </widget>
                     </item>
                     <item>
-                      <layout class="QFormLayout" name="form_7">
-                        <item row="0" column="0">
-                          <widget class="QLabel" name="label_8">
+                      <layout class="QFormLayout" name="form_8">
+                        <item row="0" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_OuterEdgeSnap">
+                            <property name="text"><string>Snap at the outer screen edges</string></property>
+                          </widget>
+                        </item>
+                        <item row="1" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_InnerEdgeSnap">
+                            <property name="text"><string>Snap at the edges between monitors</string></property>
+                          </widget>
+                        </item>
+                        <item row="2" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_CornerQuarters">
+                            <property name="text"><string>Snap to a quarter near the corners</string></property>
+                          </widget>
+                        </item>
+                        <item row="3" column="0">
+                          <widget class="QLabel" name="label_9">
                             <property name="text"><string>Snap zone width:</string></property>
                           </widget>
                         </item>
-                        <item row="0" column="1">
+                        <item row="3" column="1">
                           <widget class="QSpinBox" name="kcfg_InnerEdgeWidth">
                             <property name="minimum"><number>2</number></property>
                             <property name="maximum"><number>60</number></property>
                             <property name="suffix"><string> px</string></property>
+                          </widget>
+                        </item>
+                        <item row="4" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_RestoreSize">
+                            <property name="text"><string>Restore a window's size when you drag it out of a snap</string></property>
                           </widget>
                         </item>
                       </layout>
@@ -57,15 +76,15 @@
                 <widget class="QGroupBox" name="kcfg_LayoutBar">
                   <property name="checkable"><bool>true</bool></property>
                   <property name="title"><string>Snap layout bar at the top edge</string></property>
-                  <layout class="QVBoxLayout" name="vbox_9">
+                  <layout class="QVBoxLayout" name="vbox_10">
                     <item>
-                      <widget class="QLabel" name="label_10">
+                      <widget class="QLabel" name="label_11">
                         <property name="text"><string>Drag a window to the top edge. A small bar with layouts appears; drop the window on the slot where it should go.</string></property>
                         <property name="wordWrap"><bool>true</bool></property>
                       </widget>
                     </item>
                     <item>
-                      <layout class="QFormLayout" name="form_11">
+                      <layout class="QFormLayout" name="form_12">
                         <item row="0" column="0" colspan="2">
                           <widget class="QCheckBox" name="kcfg_LayoutHalves">
                             <property name="text"><string>Halves</string></property>
@@ -102,18 +121,18 @@
                 </widget>
               </item>
               <item>
-                <widget class="QGroupBox" name="group_12">
+                <widget class="QGroupBox" name="group_13">
                   <property name="title"><string>Top edge</string></property>
-                  <layout class="QVBoxLayout" name="vbox_13">
+                  <layout class="QVBoxLayout" name="vbox_14">
                     <item>
-                      <layout class="QFormLayout" name="form_14">
+                      <layout class="QFormLayout" name="form_15">
                         <item row="0" column="0" colspan="2">
                           <widget class="QCheckBox" name="kcfg_MaximizeAtTop">
                             <property name="text"><string>Maximize when dropped at the top edge</string></property>
                           </widget>
                         </item>
                         <item row="1" column="0">
-                          <widget class="QLabel" name="label_15">
+                          <widget class="QLabel" name="label_16">
                             <property name="text"><string>Trigger distance from the top edge:</string></property>
                           </widget>
                         </item>
@@ -130,11 +149,11 @@
                 </widget>
               </item>
               <item>
-                <widget class="QGroupBox" name="group_16">
+                <widget class="QGroupBox" name="group_17">
                   <property name="title"><string>Window picker</string></property>
-                  <layout class="QVBoxLayout" name="vbox_17">
+                  <layout class="QVBoxLayout" name="vbox_18">
                     <item>
-                      <layout class="QFormLayout" name="form_18">
+                      <layout class="QFormLayout" name="form_19">
                         <item row="0" column="0" colspan="2">
                           <widget class="QCheckBox" name="kcfg_IncludeMinimized">
                             <property name="text"><string>Include minimized windows</string></property>
@@ -151,23 +170,23 @@
                 </widget>
               </item>
               <item>
-                <spacer name="spacer_19">
+                <spacer name="spacer_20">
                   <property name="orientation"><enum>Qt::Vertical</enum></property>
                 </spacer>
               </item>
             </layout>
           </widget>
-          <widget class="QWidget" name="tab_20">
+          <widget class="QWidget" name="tab_21">
             <attribute name="title"><string>Appearance</string></attribute>
-            <layout class="QVBoxLayout" name="vbox_21">
+            <layout class="QVBoxLayout" name="vbox_22">
               <item>
-                <widget class="QGroupBox" name="group_22">
+                <widget class="QGroupBox" name="group_23">
                   <property name="title"><string>Layout bar</string></property>
-                  <layout class="QVBoxLayout" name="vbox_23">
+                  <layout class="QVBoxLayout" name="vbox_24">
                     <item>
-                      <layout class="QFormLayout" name="form_24">
+                      <layout class="QFormLayout" name="form_25">
                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_25">
+                          <widget class="QLabel" name="label_26">
                             <property name="text"><string>Background color:</string></property>
                           </widget>
                         </item>
@@ -176,7 +195,7 @@
                           </widget>
                         </item>
                         <item row="1" column="0">
-                          <widget class="QLabel" name="label_26">
+                          <widget class="QLabel" name="label_27">
                             <property name="text"><string>Background opacity:</string></property>
                           </widget>
                         </item>
@@ -188,7 +207,7 @@
                           </widget>
                         </item>
                         <item row="2" column="0">
-                          <widget class="QLabel" name="label_27">
+                          <widget class="QLabel" name="label_28">
                             <property name="text"><string>Layout preview width:</string></property>
                           </widget>
                         </item>
@@ -200,7 +219,7 @@
                           </widget>
                         </item>
                         <item row="3" column="0">
-                          <widget class="QLabel" name="label_28">
+                          <widget class="QLabel" name="label_29">
                             <property name="text"><string>Layout preview height:</string></property>
                           </widget>
                         </item>
@@ -217,13 +236,13 @@
                 </widget>
               </item>
               <item>
-                <widget class="QGroupBox" name="group_29">
+                <widget class="QGroupBox" name="group_30">
                   <property name="title"><string>Highlight and drop preview</string></property>
-                  <layout class="QVBoxLayout" name="vbox_30">
+                  <layout class="QVBoxLayout" name="vbox_31">
                     <item>
-                      <layout class="QFormLayout" name="form_31">
+                      <layout class="QFormLayout" name="form_32">
                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_32">
+                          <widget class="QLabel" name="label_33">
                             <property name="text"><string>Highlight color:</string></property>
                           </widget>
                         </item>
@@ -232,7 +251,7 @@
                           </widget>
                         </item>
                         <item row="1" column="0">
-                          <widget class="QLabel" name="label_33">
+                          <widget class="QLabel" name="label_34">
                             <property name="text"><string>Drop preview fill opacity:</string></property>
                           </widget>
                         </item>
@@ -244,7 +263,7 @@
                           </widget>
                         </item>
                         <item row="2" column="0">
-                          <widget class="QLabel" name="label_34">
+                          <widget class="QLabel" name="label_35">
                             <property name="text"><string>Drop preview border width:</string></property>
                           </widget>
                         </item>
@@ -266,13 +285,13 @@
                 </widget>
               </item>
               <item>
-                <widget class="QGroupBox" name="group_35">
+                <widget class="QGroupBox" name="group_36">
                   <property name="title"><string>Window picker</string></property>
-                  <layout class="QVBoxLayout" name="vbox_36">
+                  <layout class="QVBoxLayout" name="vbox_37">
                     <item>
-                      <layout class="QFormLayout" name="form_37">
+                      <layout class="QFormLayout" name="form_38">
                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_38">
+                          <widget class="QLabel" name="label_39">
                             <property name="text"><string>Background dimming:</string></property>
                           </widget>
                         </item>
@@ -289,7 +308,7 @@
                           </widget>
                         </item>
                         <item row="2" column="0">
-                          <widget class="QLabel" name="label_39">
+                          <widget class="QLabel" name="label_40">
                             <property name="text"><string>Maximum thumbnail width:</string></property>
                           </widget>
                         </item>
@@ -306,13 +325,13 @@
                 </widget>
               </item>
               <item>
-                <widget class="QGroupBox" name="group_40">
+                <widget class="QGroupBox" name="group_41">
                   <property name="title"><string>Shape</string></property>
-                  <layout class="QVBoxLayout" name="vbox_41">
+                  <layout class="QVBoxLayout" name="vbox_42">
                     <item>
-                      <layout class="QFormLayout" name="form_42">
+                      <layout class="QFormLayout" name="form_43">
                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_43">
+                          <widget class="QLabel" name="label_44">
                             <property name="text"><string>Corner radius:</string></property>
                           </widget>
                         </item>
@@ -329,7 +348,7 @@
                 </widget>
               </item>
               <item>
-                <spacer name="spacer_44">
+                <spacer name="spacer_45">
                   <property name="orientation"><enum>Qt::Vertical</enum></property>
                 </spacer>
               </item>

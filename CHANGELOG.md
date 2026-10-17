@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0 (2026-10-17)
+
+- Snap11 now handles the outer screen edges itself too, with its own
+  outline and blur, so every edge looks the same. Turn off KDE's own edge
+  tiling (System Settings > Screen Edges) to use it.
+- Corners snap to quarters.
+- No Snap Assist over a part of the screen that a window is already
+  snapped into, like in Windows.
+- A window gets its old size back when you drag it out of a snap (halves,
+  quarters and bar slots).
+
 ## 1.1.0 (2026-10-16)
 
 - Snap at the edges between two monitors too. KDE only snaps at the outer

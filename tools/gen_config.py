@@ -27,11 +27,16 @@ OPTIONS = [
          "text": "Drag a window to the left or right screen edge. The other windows "
                  "then show up as thumbnails in the free half.",
          "options": []},
-        {"title": "Snap at the edges between monitors", "toggle": ("InnerEdgeSnap", True),
-         "text": "KDE only snaps at the outer screen edges. With this on, stopping "
-                 "close to an edge where two monitors meet snaps the window to that half too.",
+        {"title": "Edge snapping",
+         "text": "Snap11 snaps windows dragged to the left or right screen edge itself, "
+                 "with its own outline. For that, turn off KDE's own edge tiling "
+                 "(System Settings > Screen Edges), or both will show.",
          "options": [
+             ("OuterEdgeSnap", "Bool", True, "Snap at the outer screen edges", None),
+             ("InnerEdgeSnap", "Bool", True, "Snap at the edges between monitors", None),
+             ("CornerQuarters", "Bool", True, "Snap to a quarter near the corners", None),
              ("InnerEdgeWidth", "Int", 10, "Snap zone width:", (2, 60, " px")),
+             ("RestoreSize", "Bool", True, "Restore a window's size when you drag it out of a snap", None),
          ]},
         {"title": "Snap layout bar at the top edge", "toggle": ("LayoutBar", True),
          "text": "Drag a window to the top edge. A small bar with layouts appears; "

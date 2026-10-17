@@ -134,20 +134,75 @@ Item {
     function place(w, slot) {
         log("placing '" + w.caption + "' into " + (slot.quickTile || "custom slot"));
         w.minimized = false;
+        rememberSize(w, slot);
         // Leave any native tile first, or KWin snaps the window back (and a
         // second quick tile to the same side would just untile it).
         if (w.tile)
             w.tile = null;
         w.setMaximize(false, false);
-        // Move it onto the slot first. This also brings it to the right
-        // screen: quick tiling always works on the window's current screen.
-        w.frameGeometry = slot.rect;
+        if (slot.quickTile) {
+            // Quick tiling works on the window's current screen, so bring it
+            // to the slot's screen first, but at its own size: KDE remembers
+            // the size it had right before tiling.
+            const size = presnap[w.internalId.toString()];
+            const g = w.frameGeometry;
+            const ww = Math.min(size ? size.width : g.width, slot.rect.width);
+            const wh = Math.min(size ? size.height : g.height, slot.rect.height);
+            w.frameGeometry = Qt.rect(Math.round(slot.rect.x + (slot.rect.width - ww) / 2),
+                                      Math.round(slot.rect.y + (slot.rect.height - wh) / 2), ww, wh);
+        } else {
+            w.frameGeometry = slot.rect;
+        }
         Workspace.activeWindow = w;
-        if (slot.quickTile === "left")
-            Workspace.slotWindowQuickTileLeft();
-        else if (slot.quickTile === "right")
-            Workspace.slotWindowQuickTileRight();
+        const quickTile = {
+            "left": Workspace.slotWindowQuickTileLeft,
+            "right": Workspace.slotWindowQuickTileRight,
+            "topLeft": Workspace.slotWindowQuickTileTopLeft,
+            "topRight": Workspace.slotWindowQuickTileTopRight,
+            "bottomLeft": Workspace.slotWindowQuickTileBottomLeft,
+            "bottomRight": Workspace.slotWindowQuickTileBottomRight
+        }[slot.quickTile];
+        if (quickTile)
+            quickTile.call(Workspace);
         log("  now at " + w.frameGeometry.x + "," + w.frameGeometry.y + " on " + w.output.name);
+    }
+
+    // Size of each window before we snapped it, keyed by internalId:
+    // { width, height, rect } where rect is the slot it was snapped to.
+    // Dragging the window out of that slot gives it its old size back.
+    property var presnap: ({})
+
+    function rememberSize(w, slot) {
+        const id = w.internalId.toString();
+        const e = presnap[id];
+        // Moving from one snap to another: keep the size from before the
+        // first snap.
+        if (e && matches(w.frameGeometry, e.rect)) {
+            e.rect = slot.rect;
+            return;
+        }
+        const g = w.frameGeometry;
+        presnap[id] = { "width": g.width, "height": g.height, "rect": slot.rect };
+    }
+
+    // On drag start: a window still sitting in the slot we snapped it to
+    // gets its old size back, placed so the cursor keeps its spot on the
+    // title bar (same horizontal ratio).
+    function restoreSize(w) {
+        const id = w.internalId.toString();
+        const e = presnap[id];
+        if (!e)
+            return;
+        delete presnap[id];
+        const g = w.frameGeometry;
+        if (!cfg.restoreSize || !matches(g, e.rect))
+            return; // turned off, or moved or resized since
+        const c = Workspace.cursorPos;
+        const ratio = Math.max(0, Math.min(1, (c.x - g.x) / Math.max(1, g.width)));
+        if (w.tile)
+            w.tile = null;
+        w.frameGeometry = Qt.rect(Math.round(c.x - ratio * e.width), g.y, e.width, e.height);
+        log("restored size of '" + w.caption + "' to " + e.width + "x" + e.height);
     }
 
     // Offer windows for each slot in the queue, one slot after the other.
@@ -157,7 +212,26 @@ Item {
         assistNext();
     }
 
+    // Is a slot already taken by a window that fills it (snapped there)?
+    // Like Windows, Snap Assist does not open over such a slot.
+    function slotFilled(slot) {
+        const stack = Workspace.stackingOrder;
+        for (let i = 0; i < stack.length; i++) {
+            const w = stack[i];
+            if (!isNormal(w) || w.minimized || w.pid <= 0 || !onCurrentDesktop(w))
+                continue;
+            if (matches(w.frameGeometry, slot.rect))
+                return true;
+        }
+        return false;
+    }
+
     function assistNext() {
+        // Skip slots that are already filled.
+        while (assistQueue.length > 0 && slotFilled(assistQueue[0])) {
+            log("slot already filled, no assist there");
+            assistQueue = assistQueue.slice(1);
+        }
         if (assistQueue.length === 0)
             return;
         const slot = assistQueue[0];
@@ -207,6 +281,8 @@ Item {
 
     function dragStarted(w) {
         root.moveStarted[w.internalId.toString()] = w.move;
+        if (w.move)
+            restoreSize(w);
         if (assist.visible)
             assist.dismiss("new drag");
         assistQueue = [];
@@ -220,10 +296,10 @@ Item {
             return;
         const p = Workspace.cursorPos;
         const atTop = p.y <= screenArea(w.output).y + topTrigger;
-        // Inner screen edges: KDE only snaps at the outer edges, so handle
-        // the edges between monitors here. The top edge takes priority.
-        if (!atTop && !topActive) {
-            const edge = innerEdgeAt(p);
+        // Left and right screen edges (and their corners). These come before
+        // the top edge, so a top corner snaps to a quarter like in Windows.
+        if (!topActive) {
+            const edge = edgeAt(p);
             if (edge) {
                 if (!edgeArmed || edgeArmed.slot.output !== edge.slot.output
                         || edgeArmed.slot.quickTile !== edge.slot.quickTile)
@@ -292,23 +368,60 @@ Item {
         return false;
     }
 
-    // Snap target when p is in the zone along an inner edge, else null.
-    function innerEdgeAt(p) {
-        if (!cfg.innerEdgeSnap)
-            return null;
+    // How far (px) from the top or bottom a side edge counts as a corner.
+    readonly property int cornerZone: 80
+
+    function quarters(area) {
+        const lw = Math.round(area.width / 2);
+        const th = Math.round(area.height / 2);
+        return {
+            "topLeft": Qt.rect(area.x, area.y, lw, th),
+            "topRight": Qt.rect(area.x + lw, area.y, area.width - lw, th),
+            "bottomLeft": Qt.rect(area.x, area.y + th, lw, area.height - th),
+            "bottomRight": Qt.rect(area.x + lw, area.y + th, area.width - lw, area.height - th)
+        };
+    }
+
+    // Snap target when p is in the snap zone along a left or right screen
+    // edge, else null: { slot, others }. Outer edges replace KDE's own edge
+    // tiling (so everything looks the same); inner edges, where two monitors
+    // meet, are something KDE does not do at all. Near the top or bottom of
+    // an edge, the window snaps to a quarter.
+    function edgeAt(p) {
         const s = screenAt(p);
         if (!s)
             return null;
         const g = s.geometry;
         const zone = cfg.innerEdgeWidth;
         let side = "";
-        if (p.x < g.x + zone && hasNeighbour(s, "left", p.y))
+        if (p.x < g.x + zone)
             side = "left";
-        else if (p.x >= g.x + g.width - zone && hasNeighbour(s, "right", p.y))
+        else if (p.x >= g.x + g.width - zone)
             side = "right";
         if (!side)
             return null;
-        const h = halves(workArea(s));
+        const inner = hasNeighbour(s, side, p.y);
+        if (inner ? !cfg.innerEdgeSnap : !cfg.outerEdgeSnap)
+            return null;
+        const a = workArea(s);
+        let row = "";
+        if (cfg.cornerQuarters) {
+            if (p.y < g.y + cornerZone)
+                row = "top";
+            else if (p.y >= g.y + g.height - cornerZone)
+                row = "bottom";
+        }
+        if (row) {
+            const q = quarters(a);
+            const key = row + (side === "left" ? "Left" : "Right");
+            const others = [];
+            for (const k of ["topLeft", "topRight", "bottomLeft", "bottomRight"]) {
+                if (k !== key)
+                    others.push({ "rect": q[k], "quickTile": k, "output": s });
+            }
+            return { "slot": { "rect": q[key], "quickTile": key, "output": s }, "others": others };
+        }
+        const h = halves(a);
         const other = side === "left" ? "right" : "left";
         return {
             "slot": { "rect": h[side], "quickTile": side, "output": s },
@@ -636,6 +749,7 @@ Item {
             root.refreshWatched();
         }
         function onWindowRemoved(w) {
+            delete root.presnap[w.internalId.toString()];
             root.refreshWatched();
         }
         function onWindowActivated(w) {

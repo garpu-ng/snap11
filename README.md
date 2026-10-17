@@ -16,10 +16,11 @@
 ## What it does
 
 **Snap Assist.** Drag a window to the left or right screen edge. It snaps to
-that half, and the free half fills with thumbnails of your other windows.
-Click one and it takes the other half. Hovering a thumbnail highlights it
-and shows a close button, like in Windows; arrow keys and Enter work too.
-Escape or a click anywhere else closes the picker.
+that half (near a corner: to that quarter), and the free part fills with
+thumbnails of your other windows. Click one and it takes that part. Hovering
+a thumbnail highlights it and shows a close button; arrow keys and Enter
+work too. Escape or a click anywhere else closes the picker. If a window is
+already snapped into the free part, no thumbnails appear, like in Windows.
 
 **Snap layout bar.** Drag a window to the top edge. A small bar with layouts
 (halves and thirds) appears at the top center. Move over the slot where the
@@ -54,7 +55,7 @@ for "Snap11" > Install. Then tick Snap11 and click Apply.
 **From a release file:**
 
 ```bash
-kpackagetool6 --type KWin/Script --install snap11-1.1.0.kwinscript
+kpackagetool6 --type KWin/Script --install snap11-1.2.0.kwinscript
 ```
 
 Then enable it under System Settings > Window Management > KWin Scripts.
@@ -62,24 +63,28 @@ Then enable it under System Settings > Window Management > KWin Scripts.
 **Update an existing install:**
 
 ```bash
-kpackagetool6 --type KWin/Script --upgrade snap11-1.1.0.kwinscript
+kpackagetool6 --type KWin/Script --upgrade snap11-1.2.0.kwinscript
 ```
 
 Log out and back in after an update. KWin keeps the old version in memory
 until then.
 
-### One setting to change
+### Two settings to change
 
-Plasma maximizes a window when you drag it to the top edge. Turn that off so
-the layout bar can take over (Snap11 maximizes by itself when you drop at the
-top edge):
+Plasma has its own edge snapping with its own look. Turn it off so Snap11
+takes over the edges (it maximizes and tiles by itself):
 
-System Settings > Screen Edges > turn off **"Maximize: Drag windows to top edge"**.
+System Settings > Screen Edges > turn off **"Maximize: Drag windows to top
+edge"** and **"Tile: Drag windows to the left or right edge"**.
 
 Or in a terminal:
 
 ```bash
 kwriteconfig6 --file kwinrc --group Windows --key ElectricBorderMaximize false
+```
+
+```bash
+kwriteconfig6 --file kwinrc --group Windows --key ElectricBorderTiling false
 ```
 
 ```bash
@@ -91,9 +96,10 @@ qdbus6 org.kde.KWin /KWin reconfigure
 System Settings > Window Management > KWin Scripts > Snap11 > configure
 button.
 
-- **Behavior:** turn Snap Assist and the layout bar on or off, choose the
-  layouts in the bar, maximize at the top edge, trigger distance, include
-  minimized windows, only offer windows from the same screen.
+- **Behavior:** turn Snap Assist, edge and corner snapping and the layout
+  bar on or off, choose the layouts in the bar, maximize at the top edge,
+  trigger distances, include minimized windows, only offer windows from the
+  same screen.
 - **Appearance:** bar color and opacity, layout preview size, highlight
   color, drop outline fill and border, blur on or off, picker dimming,
   thumbnail size, corner radius.
