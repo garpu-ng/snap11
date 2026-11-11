@@ -37,14 +37,20 @@ Also:
   screen move over when you pick them.
 - Halves use KDE's own quick tiling, so the shared resize handle between
   two tiled windows keeps working.
-- Blur behind the drop outline and the window picker.
+- Looks like part of Plasma. The drop preview is drawn like KWin's own
+  tiling outline (and slides out of the window the same way). The layout
+  bar and the window picker use your Plasma theme's popup frame, blur and
+  shadow, the picker is laid out like KWin's "Thumbnail Grid" task
+  switcher, and highlights use your accent color. Change the theme or the
+  accent color and Snap11 follows.
 - Optional extra layouts: two thirds + one third, one third + two thirds,
   quarters.
 
 ## Requirements
 
 - KDE Plasma 6 on Wayland. Tested on Plasma 6.8.
-- The KWin "Blur" desktop effect, for the blur (on by default in Plasma).
+- The KWin "Blur" desktop effect, for the blur behind the bar and the
+  picker (on by default in Plasma; your theme decides whether popups blur).
 
 ## Install
 
@@ -55,7 +61,7 @@ for "Snap11" > Install. Then tick Snap11 and click Apply.
 **From a release file:**
 
 ```bash
-kpackagetool6 --type KWin/Script --install snap11-1.2.1.kwinscript
+kpackagetool6 --type KWin/Script --install snap11-1.3.0.kwinscript
 ```
 
 Then enable it under System Settings > Window Management > KWin Scripts.
@@ -63,7 +69,7 @@ Then enable it under System Settings > Window Management > KWin Scripts.
 **Update an existing install:**
 
 ```bash
-kpackagetool6 --type KWin/Script --upgrade snap11-1.2.1.kwinscript
+kpackagetool6 --type KWin/Script --upgrade snap11-1.3.0.kwinscript
 ```
 
 Log out and back in after an update. KWin keeps the old version in memory
@@ -101,9 +107,9 @@ button.
   bar on or off, choose the layouts in the bar, maximize at the top edge,
   trigger distances, include minimized windows, only offer windows from the
   same screen.
-- **Appearance:** bar color and opacity, layout preview size, highlight
-  color, drop outline fill and border, blur on or off, picker dimming,
-  thumbnail size, corner radius.
+- **Appearance:** layout preview size in the bar, maximum thumbnail size
+  in the picker. Colors, frames, blur and corners come from your Plasma
+  theme.
 
 ## Known limits
 

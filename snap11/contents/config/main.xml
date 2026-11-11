@@ -57,41 +57,14 @@
     <entry name="CurrentScreenOnly" type="Bool">
       <default>false</default>
     </entry>
-    <entry name="BarColor" type="Color">
-      <default>28,28,33</default>
-    </entry>
-    <entry name="BarOpacity" type="Int">
-      <default>100</default>
-    </entry>
     <entry name="PreviewWidth" type="Int">
       <default>120</default>
     </entry>
     <entry name="PreviewHeight" type="Int">
       <default>64</default>
     </entry>
-    <entry name="HighlightColor" type="Color">
-      <default>255,255,255</default>
-    </entry>
-    <entry name="OutlineFillOpacity" type="Int">
-      <default>20</default>
-    </entry>
-    <entry name="OutlineBorderWidth" type="Int">
-      <default>3</default>
-    </entry>
-    <entry name="OutlineBlur" type="Bool">
-      <default>true</default>
-    </entry>
-    <entry name="AssistDim" type="Int">
-      <default>40</default>
-    </entry>
-    <entry name="AssistBlur" type="Bool">
-      <default>true</default>
-    </entry>
     <entry name="AssistMaxCardWidth" type="Int">
-      <default>340</default>
-    </entry>
-    <entry name="CornerRadius" type="Int">
-      <default>12</default>
+      <default>320</default>
     </entry>
   </group>
 </kcfg>

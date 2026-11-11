@@ -10,10 +10,11 @@
             <attribute name="title"><string>Behavior</string></attribute>
             <layout class="QVBoxLayout" name="vbox_2">
               <item>
-                <widget class="QLabel" name="warning_3">
+                <widget class="KMessageWidget" name="warning_3">
                   <property name="text"><string>Important: turn off KDE's own edge snapping, or both will show. System Settings &gt; Screen Edges: turn off "Maximize: Drag windows to top edge" and "Tile: Drag windows to the left or right edge".</string></property>
                   <property name="wordWrap"><bool>true</bool></property>
-                  <property name="styleSheet"><string>color: #f67400; font-weight: bold;</string></property>
+                  <property name="closeButtonVisible"><bool>false</bool></property>
+                  <property name="messageType"><enum>KMessageWidget::Warning</enum></property>
                 </widget>
               </item>
               <item>
@@ -188,135 +189,43 @@
             <layout class="QVBoxLayout" name="vbox_23">
               <item>
                 <widget class="QGroupBox" name="group_24">
-                  <property name="title"><string>Layout bar</string></property>
+                  <property name="title"><string>Sizes</string></property>
                   <layout class="QVBoxLayout" name="vbox_25">
                     <item>
-                      <layout class="QFormLayout" name="form_26">
+                      <widget class="QLabel" name="label_26">
+                        <property name="text"><string>Colors, frames, blur and shadows follow your Plasma theme and accent color, like KWin's own popups and its tiling outline.</string></property>
+                        <property name="wordWrap"><bool>true</bool></property>
+                      </widget>
+                    </item>
+                    <item>
+                      <layout class="QFormLayout" name="form_27">
                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_27">
-                            <property name="text"><string>Background color:</string></property>
-                          </widget>
-                        </item>
-                        <item row="0" column="1">
-                          <widget class="KColorButton" name="kcfg_BarColor">
-                          </widget>
-                        </item>
-                        <item row="1" column="0">
                           <widget class="QLabel" name="label_28">
-                            <property name="text"><string>Background opacity:</string></property>
-                          </widget>
-                        </item>
-                        <item row="1" column="1">
-                          <widget class="QSpinBox" name="kcfg_BarOpacity">
-                            <property name="minimum"><number>10</number></property>
-                            <property name="maximum"><number>100</number></property>
-                            <property name="suffix"><string> %</string></property>
-                          </widget>
-                        </item>
-                        <item row="2" column="0">
-                          <widget class="QLabel" name="label_29">
                             <property name="text"><string>Layout preview width:</string></property>
                           </widget>
                         </item>
-                        <item row="2" column="1">
+                        <item row="0" column="1">
                           <widget class="QSpinBox" name="kcfg_PreviewWidth">
                             <property name="minimum"><number>60</number></property>
                             <property name="maximum"><number>300</number></property>
                             <property name="suffix"><string> px</string></property>
                           </widget>
                         </item>
-                        <item row="3" column="0">
-                          <widget class="QLabel" name="label_30">
+                        <item row="1" column="0">
+                          <widget class="QLabel" name="label_29">
                             <property name="text"><string>Layout preview height:</string></property>
                           </widget>
                         </item>
-                        <item row="3" column="1">
+                        <item row="1" column="1">
                           <widget class="QSpinBox" name="kcfg_PreviewHeight">
                             <property name="minimum"><number>30</number></property>
                             <property name="maximum"><number>200</number></property>
                             <property name="suffix"><string> px</string></property>
                           </widget>
                         </item>
-                      </layout>
-                    </item>
-                  </layout>
-                </widget>
-              </item>
-              <item>
-                <widget class="QGroupBox" name="group_31">
-                  <property name="title"><string>Highlight and drop preview</string></property>
-                  <layout class="QVBoxLayout" name="vbox_32">
-                    <item>
-                      <layout class="QFormLayout" name="form_33">
-                        <item row="0" column="0">
-                          <widget class="QLabel" name="label_34">
-                            <property name="text"><string>Highlight color:</string></property>
-                          </widget>
-                        </item>
-                        <item row="0" column="1">
-                          <widget class="KColorButton" name="kcfg_HighlightColor">
-                          </widget>
-                        </item>
-                        <item row="1" column="0">
-                          <widget class="QLabel" name="label_35">
-                            <property name="text"><string>Drop preview fill opacity:</string></property>
-                          </widget>
-                        </item>
-                        <item row="1" column="1">
-                          <widget class="QSpinBox" name="kcfg_OutlineFillOpacity">
-                            <property name="minimum"><number>0</number></property>
-                            <property name="maximum"><number>100</number></property>
-                            <property name="suffix"><string> %</string></property>
-                          </widget>
-                        </item>
                         <item row="2" column="0">
-                          <widget class="QLabel" name="label_36">
-                            <property name="text"><string>Drop preview border width:</string></property>
-                          </widget>
-                        </item>
-                        <item row="2" column="1">
-                          <widget class="QSpinBox" name="kcfg_OutlineBorderWidth">
-                            <property name="minimum"><number>0</number></property>
-                            <property name="maximum"><number>10</number></property>
-                            <property name="suffix"><string> px</string></property>
-                          </widget>
-                        </item>
-                        <item row="3" column="0" colspan="2">
-                          <widget class="QCheckBox" name="kcfg_OutlineBlur">
-                            <property name="text"><string>Blur behind the drop preview</string></property>
-                          </widget>
-                        </item>
-                      </layout>
-                    </item>
-                  </layout>
-                </widget>
-              </item>
-              <item>
-                <widget class="QGroupBox" name="group_37">
-                  <property name="title"><string>Window picker</string></property>
-                  <layout class="QVBoxLayout" name="vbox_38">
-                    <item>
-                      <layout class="QFormLayout" name="form_39">
-                        <item row="0" column="0">
-                          <widget class="QLabel" name="label_40">
-                            <property name="text"><string>Background dimming:</string></property>
-                          </widget>
-                        </item>
-                        <item row="0" column="1">
-                          <widget class="QSpinBox" name="kcfg_AssistDim">
-                            <property name="minimum"><number>0</number></property>
-                            <property name="maximum"><number>100</number></property>
-                            <property name="suffix"><string> %</string></property>
-                          </widget>
-                        </item>
-                        <item row="1" column="0" colspan="2">
-                          <widget class="QCheckBox" name="kcfg_AssistBlur">
-                            <property name="text"><string>Blur behind the window picker</string></property>
-                          </widget>
-                        </item>
-                        <item row="2" column="0">
-                          <widget class="QLabel" name="label_41">
-                            <property name="text"><string>Maximum thumbnail width:</string></property>
+                          <widget class="QLabel" name="label_30">
+                            <property name="text"><string>Maximum thumbnail width in the window picker:</string></property>
                           </widget>
                         </item>
                         <item row="2" column="1">
@@ -332,30 +241,7 @@
                 </widget>
               </item>
               <item>
-                <widget class="QGroupBox" name="group_42">
-                  <property name="title"><string>Shape</string></property>
-                  <layout class="QVBoxLayout" name="vbox_43">
-                    <item>
-                      <layout class="QFormLayout" name="form_44">
-                        <item row="0" column="0">
-                          <widget class="QLabel" name="label_45">
-                            <property name="text"><string>Corner radius:</string></property>
-                          </widget>
-                        </item>
-                        <item row="0" column="1">
-                          <widget class="QSpinBox" name="kcfg_CornerRadius">
-                            <property name="minimum"><number>0</number></property>
-                            <property name="maximum"><number>30</number></property>
-                            <property name="suffix"><string> px</string></property>
-                          </widget>
-                        </item>
-                      </layout>
-                    </item>
-                  </layout>
-                </widget>
-              </item>
-              <item>
-                <spacer name="spacer_46">
+                <spacer name="spacer_31">
                   <property name="orientation"><enum>Qt::Vertical</enum></property>
                 </spacer>
               </item>
@@ -370,6 +256,11 @@
       <class>KColorButton</class>
       <extends>QPushButton</extends>
       <header>kcolorbutton.h</header>
+    </customwidget>
+    <customwidget>
+      <class>KMessageWidget</class>
+      <extends>QFrame</extends>
+      <header>kmessagewidget.h</header>
     </customwidget>
   </customwidgets>
   <resources/>

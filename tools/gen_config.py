@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent / "snap11" / "contents"
 #   type: Bool | Int | Color
 #   extra for Int: (min, max, suffix)
 # A group with "toggle" is a checkable group box bound to that Bool key.
-# A group with "warning" is just an orange note, no box.
+# A group with "warning" is a KDE warning banner, no box.
 OPTIONS = [
     ("Behavior", [
         {"warning": "Important: turn off KDE's own edge snapping, or both will show. "
@@ -63,25 +63,13 @@ OPTIONS = [
         ]},
     ]),
     ("Appearance", [
-        {"title": "Layout bar", "options": [
-            ("BarColor", "Color", "28,28,33", "Background color:", None),
-            ("BarOpacity", "Int", 100, "Background opacity:", (10, 100, " %")),
+        {"title": "Sizes",
+         "text": "Colors, frames, blur and shadows follow your Plasma theme and accent "
+                 "color, like KWin's own popups and its tiling outline.",
+         "options": [
             ("PreviewWidth", "Int", 120, "Layout preview width:", (60, 300, " px")),
             ("PreviewHeight", "Int", 64, "Layout preview height:", (30, 200, " px")),
-        ]},
-        {"title": "Highlight and drop preview", "options": [
-            ("HighlightColor", "Color", "255,255,255", "Highlight color:", None),
-            ("OutlineFillOpacity", "Int", 20, "Drop preview fill opacity:", (0, 100, " %")),
-            ("OutlineBorderWidth", "Int", 3, "Drop preview border width:", (0, 10, " px")),
-            ("OutlineBlur", "Bool", True, "Blur behind the drop preview", None),
-        ]},
-        {"title": "Window picker", "options": [
-            ("AssistDim", "Int", 40, "Background dimming:", (0, 100, " %")),
-            ("AssistBlur", "Bool", True, "Blur behind the window picker", None),
-            ("AssistMaxCardWidth", "Int", 340, "Maximum thumbnail width:", (120, 800, " px")),
-        ]},
-        {"title": "Shape", "options": [
-            ("CornerRadius", "Int", 12, "Corner radius:", (0, 30, " px")),
+            ("AssistMaxCardWidth", "Int", 320, "Maximum thumbnail width in the window picker:", (120, 800, " px")),
         ]},
     ]),
 ]
@@ -169,11 +157,12 @@ class Ui:
 
     def group(self, d, g):
         if "warning" in g:
-            self.add(d, f'<widget class="QLabel" name="{self.name("warning")}">')
+            # KDE's own warning banner (the orange one in System Settings).
+            self.add(d, f'<widget class="KMessageWidget" name="{self.name("warning")}">')
             self.prop(d + 1, "text", "string", escape(g["warning"]))
             self.prop(d + 1, "wordWrap", "bool", "true")
-            # Breeze's orange ("neutral" text color), bold so it stands out.
-            self.prop(d + 1, "styleSheet", "string", "color: #f67400; font-weight: bold;")
+            self.prop(d + 1, "closeButtonVisible", "bool", "false")
+            self.prop(d + 1, "messageType", "enum", "KMessageWidget::Warning")
             self.add(d, '</widget>')
             return
         if "toggle" in g:
@@ -233,6 +222,11 @@ def write_form():
     ui.add(3, '<class>KColorButton</class>')
     ui.add(3, '<extends>QPushButton</extends>')
     ui.add(3, '<header>kcolorbutton.h</header>')
+    ui.add(2, '</customwidget>')
+    ui.add(2, '<customwidget>')
+    ui.add(3, '<class>KMessageWidget</class>')
+    ui.add(3, '<extends>QFrame</extends>')
+    ui.add(3, '<header>kmessagewidget.h</header>')
     ui.add(2, '</customwidget>')
     ui.add(1, '</customwidgets>')
     ui.add(1, '<resources/>')

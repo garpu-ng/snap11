@@ -28,34 +28,11 @@ QtObject {
     property bool includeMinimized: true
     property bool currentScreenOnly: false
 
-    // Look
-    property color highlightColor: Qt.rgba(1, 1, 1, 1)
-    property color barColor: Qt.rgba(0.11, 0.11, 0.13, 1)
-    property int barOpacity: 100
+    // Look. Colors, frames, blur and corners come from the Plasma theme
+    // and the accent color, like KWin's own popups; only sizes are options.
     property int previewWidth: 120
     property int previewHeight: 64
-    property int cornerRadius: 12
-    property int outlineFillOpacity: 20
-    property int outlineBorderWidth: 3
-    property bool outlineBlur: true
-    property int assistDim: 40
-    property bool assistBlur: true
-    property int assistMaxCardWidth: 340
-
-    // KConfig stores colors as "r,g,b" (or "r,g,b,a"); also accept "#rrggbb".
-    function readColor(key, fallback) {
-        const v = KWin.readConfig(key, "");
-        const s = v === undefined || v === null ? "" : v.toString().trim();
-        if (s.length === 0)
-            return fallback;
-        if (s.charAt(0) === "#")
-            return s;
-        const parts = s.split(",").map(function(p) { return parseInt(p, 10); });
-        if (parts.length < 3 || parts.some(isNaN))
-            return fallback;
-        const a = parts.length > 3 ? parts[3] / 255 : 1;
-        return Qt.rgba(parts[0] / 255, parts[1] / 255, parts[2] / 255, a);
-    }
+    property int assistMaxCardWidth: 320
 
     function load() {
         edgeAssist = KWin.readConfig("EdgeAssist", true);
@@ -76,17 +53,8 @@ QtObject {
         includeMinimized = KWin.readConfig("IncludeMinimized", true);
         currentScreenOnly = KWin.readConfig("CurrentScreenOnly", false);
 
-        highlightColor = readColor("HighlightColor", Qt.rgba(1, 1, 1, 1));
-        barColor = readColor("BarColor", Qt.rgba(0.11, 0.11, 0.13, 1));
-        barOpacity = KWin.readConfig("BarOpacity", 100);
         previewWidth = KWin.readConfig("PreviewWidth", 120);
         previewHeight = KWin.readConfig("PreviewHeight", 64);
-        cornerRadius = KWin.readConfig("CornerRadius", 12);
-        outlineFillOpacity = KWin.readConfig("OutlineFillOpacity", 20);
-        outlineBorderWidth = KWin.readConfig("OutlineBorderWidth", 3);
-        outlineBlur = KWin.readConfig("OutlineBlur", true);
-        assistDim = KWin.readConfig("AssistDim", 40);
-        assistBlur = KWin.readConfig("AssistBlur", true);
-        assistMaxCardWidth = KWin.readConfig("AssistMaxCardWidth", 340);
+        assistMaxCardWidth = KWin.readConfig("AssistMaxCardWidth", 320);
     }
 }

@@ -1,11 +1,19 @@
 /*
  * The snap layout bar at the top of the screen.
  *
+ * Looks like KWin's own popups (the virtual desktop switch OSD): a Plasma
+ * dialog frame with the theme's blur, contrast and shadow, and each layout
+ * drawn with the theme's pager tiles ("widgets/pager"), the same ones the
+ * Pager widget and the desktop OSD use. The slot under the cursor uses the
+ * pager's hover look plus the system accent color.
+ *
  * It only draws (outputOnly): while a window is being dragged the pointer
  * is grabbed by KWin, so hover is worked out from the cursor position in
  * hitTest() instead of with MouseAreas.
  */
 import QtQuick
+import org.kde.ksvg as KSvg
+import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 
 PlasmaCore.Dialog {
@@ -51,21 +59,32 @@ PlasmaCore.Dialog {
         return list;
     }
 
-    // Look of the bar.
+    // Sizes follow Plasma's spacing units, so they scale with the font.
     readonly property int previewWidth: cfg.previewWidth
     readonly property int previewHeight: cfg.previewHeight
-    readonly property int padding: 8
-    readonly property int spacing: 10
-    readonly property int slotGap: 4
-    readonly property int topMargin: 8
-    readonly property int barWidth: 2 * padding + layouts.length * previewWidth + (layouts.length - 1) * spacing
-    readonly property int barHeight: 2 * padding + previewHeight
+    readonly property int spacing: Kirigami.Units.largeSpacing
+    readonly property int slotGap: Kirigami.Units.smallSpacing
+    readonly property int topMargin: Kirigami.Units.largeSpacing
+    // Content size, and the whole window with the theme's frame around it.
+    readonly property int contentWidth: layouts.length * previewWidth + Math.max(0, layouts.length - 1) * spacing
+    readonly property int contentHeight: previewHeight
+    readonly property int barWidth: bar.margins.left + contentWidth + bar.margins.right
+    readonly property int barHeight: bar.margins.top + contentHeight + bar.margins.bottom
 
     // Screen area the bar belongs to, and the slot under the cursor.
     property rect area: Qt.rect(0, 0, 0, 0)
     property var output: null
     property int hoveredLayout: -1
     property int hoveredSlot: -1
+
+    function barX() {
+        return Math.round(area.x + (area.width - barWidth) / 2);
+    }
+
+    function place() {
+        x = barX();
+        y = area.y + topMargin;
+    }
 
     function showOn(workArea, screen) {
         area = workArea;
@@ -74,8 +93,7 @@ PlasmaCore.Dialog {
         hoveredSlot = -1;
         visible = true;
         // Position after showing; a Dialog re-centers itself when shown.
-        x = Math.round(area.x + (area.width - barWidth) / 2);
-        y = area.y + topMargin;
+        place();
     }
 
     // Put the bar back on top of other overlays. raise() does nothing for
@@ -85,8 +103,7 @@ PlasmaCore.Dialog {
             return;
         visible = false;
         visible = true;
-        x = Math.round(area.x + (area.width - barWidth) / 2);
-        y = area.y + topMargin;
+        place();
     }
 
     function hide() {
@@ -97,24 +114,24 @@ PlasmaCore.Dialog {
 
     // Is the cursor close enough to the bar to keep it open?
     function isNear(p) {
-        const bx = area.x + (area.width - barWidth) / 2;
+        const bx = barX();
         return p.y <= area.y + topMargin + barHeight + 60
             && p.x >= bx - 120 && p.x <= bx + barWidth + 120;
     }
 
     // Update which slot is under the global point p.
     function hitTest(p) {
-        const bx = area.x + (area.width - barWidth) / 2;
-        const by = area.y + topMargin;
+        const bx = barX() + bar.margins.left;
+        const top = area.y + topMargin;
+        const py = top + bar.margins.top;
         hoveredLayout = -1;
         hoveredSlot = -1;
         for (let li = 0; li < layouts.length; li++) {
-            const px = bx + padding + li * (previewWidth + spacing);
-            const py = by + padding;
-            if (p.x < px || p.x >= px + previewWidth || p.y < by || p.y >= py + previewHeight + padding)
+            const px = bx + li * (previewWidth + spacing);
+            // The frame above and below counts as the nearest slot row.
+            if (p.x < px || p.x >= px + previewWidth || p.y < top || p.y >= top + barHeight)
                 continue;
             const fx = (p.x - px) / previewWidth;
-            // The padding above and below counts as the nearest slot row.
             const fy = Math.min(0.999, Math.max(0, (p.y - py) / previewHeight));
             const slots = layouts[li];
             for (let si = 0; si < slots.length; si++) {
@@ -144,23 +161,17 @@ PlasmaCore.Dialog {
 
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus
     location: PlasmaCore.Types.Floating
-    backgroundHints: PlasmaCore.Types.NoBackground
+    // The theme's own dialog frame: blur, contrast and shadow included.
+    backgroundHints: PlasmaCore.Types.StandardBackground
     type: PlasmaCore.Dialog.Normal
     outputOnly: true
     visible: false
-    opacity: 1
 
-    Rectangle {
-        width: bar.barWidth
-        height: bar.barHeight
-        radius: bar.cfg.cornerRadius
-        color: Qt.rgba(bar.cfg.barColor.r, bar.cfg.barColor.g, bar.cfg.barColor.b, bar.cfg.barOpacity / 100)
-        border.color: Qt.rgba(1, 1, 1, 0.12)
-        border.width: 1
+    Item {
+        width: bar.contentWidth
+        height: bar.contentHeight
 
         Row {
-            x: bar.padding
-            y: bar.padding
             spacing: bar.spacing
 
             Repeater {
@@ -178,13 +189,13 @@ PlasmaCore.Dialog {
                     Repeater {
                         model: preview.slots.length
 
-                        delegate: Rectangle {
+                        delegate: Item {
+                            id: tile
+
                             required property int index
                             readonly property var s: preview.slots[index]
                             readonly property bool hovered: bar.hoveredLayout === preview.index
                                                             && bar.hoveredSlot === index
-
-                            readonly property color hl: bar.cfg.highlightColor
 
                             // Half a gap on each inner edge, none on the outer edges.
                             x: Math.round(s.x * preview.width) + (s.x > 0 ? bar.slotGap / 2 : 0)
@@ -193,10 +204,27 @@ PlasmaCore.Dialog {
                                    - (s.x + s.w < 1 ? bar.slotGap / 2 : 0)
                             height: Math.round(s.h * preview.height) - (s.y > 0 ? bar.slotGap / 2 : 0)
                                     - (s.y + s.h < 1 ? bar.slotGap / 2 : 0)
-                            radius: Math.round(bar.cfg.cornerRadius / 2)
-                            color: hovered ? Qt.rgba(hl.r, hl.g, hl.b, 0.85) : Qt.rgba(1, 1, 1, 0.14)
-                            border.color: hovered ? hl : Qt.rgba(1, 1, 1, 0.08)
-                            border.width: 1
+
+                            // Accent fill under the hovered tile, shaped like
+                            // the theme's tile (inset by its frame margins).
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: 1
+                                radius: Kirigami.Units.cornerRadius / 2
+                                color: Kirigami.Theme.highlightColor
+                                opacity: tile.hovered ? 0.6 : 0
+
+                                Behavior on opacity {
+                                    NumberAnimation { duration: Kirigami.Units.shortDuration }
+                                }
+                            }
+
+                            KSvg.FrameSvgItem {
+                                anchors.fill: parent
+                                imagePath: "widgets/pager"
+                                // A list: the first prefix the theme has wins.
+                                prefix: tile.hovered ? ["hover", "active", "normal"] : "normal"
+                            }
                         }
                     }
                 }

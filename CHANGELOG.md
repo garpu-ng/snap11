@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.3.0 (2026-11-11)
+
+Snap11 now looks like it is part of Plasma, and follows your theme.
+
+- Drop preview: drawn like KWin's own quick tiling outline (the theme's
+  translucent frame, no border along the screen edges) and slides out of
+  the dragged window like KWin's does.
+- Layout bar: Plasma's popup frame with the theme's blur, contrast and
+  shadow; the layouts use the theme's pager tiles, the slot under the cursor
+  lights up in your accent color.
+- Window picker: laid out like KWin's "Thumbnail Grid" task switcher, in a
+  Plasma popup frame: theme highlight on the selected window, app icon over
+  the bottom of the thumbnail, title below, Plasma's own close button.
+- The notice about KDE's own edge snapping looks like a Plasma
+  notification; the warning on the settings page is KDE's warning banner.
+- Sizes follow Plasma's spacing units, animations follow the global
+  animation speed.
+- Removed the color, opacity, dimming, blur and corner radius options: all
+  of that comes from the Plasma theme now. Old values are ignored.
+
 ## 1.2.1 (2026-10-17)
 
 - Warn when KDE's own edge snapping is still on: a notice in the bottom

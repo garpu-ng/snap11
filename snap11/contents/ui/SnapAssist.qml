@@ -1,18 +1,27 @@
 /*
- * The Snap Assist picker: a window covering the free slot, showing the
- * other windows as clickable thumbnails, centered in the slot.
+ * The Snap Assist picker: covers the free slot and shows the other windows
+ * as clickable thumbnails, centered in the slot.
+ *
+ * Built like KWin's own "Thumbnail Grid" task switcher
+ * (kwin/src/tabbox/switchers/thumbnail_grid): a Plasma dialog frame (with
+ * the theme's blur, contrast and shadow), the theme's "widgets/viewitem"
+ * highlight on the selected window, the app icon over the bottom edge of the
+ * thumbnail, the title below it, and Plasma's own close button.
  */
 import QtQuick
+import QtQuick.Layouts
 import org.kde.kwin as KWinComponents
+import org.kde.ksvg as KSvg
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.components as PlasmaComponents3
 
 // A PlasmaCore.Dialog (like KZones uses) shows up reliably from a KWin
 // script on Plasma 6; a plain QtQuick Window did not appear at all.
 PlasmaCore.Dialog {
     id: assist
 
-    // The free slot to fill: { rect, quickTile }.
+    // The free slot to fill: { rect, quickTile, output }.
     property var slot: null
     // Windows offered in the picker.
     property var candidates: []
@@ -24,20 +33,25 @@ PlasmaCore.Dialog {
     // User options (Config.qml).
     required property QtObject cfg
 
-
-    // No margin: the blur covers the whole window, so the backdrop has to
-    // fill it too, or the blur would show around its edges.
-    readonly property int outerMargin: 0
-    readonly property int gap: 16
-    readonly property int labelHeight: 30
-    readonly property real thumbRatio: 0.6
-    readonly property int maxCardWidth: cfg.assistMaxCardWidth
+    // Space between the slot's edge and the frame, so the frame and its
+    // shadow sit inside the slot like a floating Plasma popup.
+    readonly property int outerGap: Kirigami.Units.largeSpacing
     // Size of the slot; the dialog sizes itself to its content item.
     property int slotWidth: 0
     property int slotHeight: 0
+    readonly property int contentWidth: Math.max(0, slotWidth - 2 * outerGap - assist.margins.left - assist.margins.right)
+    readonly property int contentHeight: Math.max(0, slotHeight - 2 * outerGap - assist.margins.top - assist.margins.bottom)
+
+    // Card metrics, as in the Thumbnail Grid switcher.
+    readonly property int iconSize: Kirigami.Units.iconSizes.huge
+    readonly property int captionRowHeight: Kirigami.Units.gridUnit * 2
+    readonly property int columnSpacing: Kirigami.Units.gridUnit
+    readonly property int maxThumbWidth: cfg.assistMaxCardWidth
+    // Height / width of a thumbnail: the shape of the slot's screen.
+    property real thumbRatio: 9 / 16
     readonly property var grid: computeGrid(candidates.length,
-                                            slotWidth - 2 * outerMargin - 2 * gap,
-                                            slotHeight - 2 * outerMargin - 2 * gap)
+                                            contentWidth - 2 * Kirigami.Units.largeSpacing,
+                                            contentHeight - 2 * Kirigami.Units.largeSpacing)
 
     // Closing a window from a card makes KWin activate another one; that
     // must not count as "clicked elsewhere" (see main.qml windowActivated).
@@ -74,18 +88,26 @@ PlasmaCore.Dialog {
             dismiss("no windows left");
     }
 
+    function place() {
+        if (!slot)
+            return;
+        x = slot.rect.x + outerGap;
+        y = slot.rect.y + outerGap;
+    }
+
     function open(s, c) {
         slot = s;
         candidates = c;
         currentIndex = -1;
         slotWidth = s.rect.width;
         slotHeight = s.rect.height;
+        const g = s.output ? s.output.geometry : null;
+        thumbRatio = g && g.width > 0 ? g.height / g.width : 9 / 16;
         openedAt = Date.now();
         visible = true;
         // A Dialog re-centers itself when shown, so position it afterwards
         // (and once more in refocusTimer, after it got its final size).
-        x = s.rect.x;
-        y = s.rect.y;
+        place();
         raise();
         requestActivate();
         content.forceActiveFocus();
@@ -102,28 +124,39 @@ PlasmaCore.Dialog {
         candidates = [];
     }
 
-    // Pick the column count that gives the largest cards that still fit.
-    // Ties (cards already at maxCardWidth) go to the grid whose shape is
-    // closest to the slot's shape, so cards spread out instead of stacking.
+    // Pick the column count that gives the largest thumbnails that still
+    // fit. Ties (thumbnails already at their maximum width) go to the grid
+    // whose shape is closest to the slot's shape, so cards spread out
+    // instead of stacking.
     function computeGrid(n, availW, availH) {
-        let best = { "cols": 1, "cardWidth": 0, "shapeError": Infinity };
+        const mh = hoverItem.margins.left + hoverItem.margins.right;
+        const mv = hoverItem.margins.top + hoverItem.margins.bottom;
+        // Inside a card: the highlight's margins twice on each side (as in
+        // the switcher), the thumbnail, the spacing and the caption row.
+        const padW = 2 * mh;
+        const padH = 2 * mv + columnSpacing + captionRowHeight;
+        let best = { "cols": 1, "thumbWidth": 0, "cellWidth": 0, "cellHeight": 0, "shapeError": Infinity };
         const slotShape = availW / Math.max(1, availH);
         for (let cols = 1; cols <= Math.max(1, n); cols++) {
             const rows = Math.ceil(n / cols);
-            const byWidth = (availW - (cols - 1) * gap) / cols;
-            const byHeight = ((availH - (rows - 1) * gap) / rows - labelHeight) / thumbRatio;
-            const w = Math.floor(Math.min(byWidth, byHeight, maxCardWidth));
-            const gridShape = (cols * w) / Math.max(1, rows * (w * thumbRatio + labelHeight));
-            const shapeError = Math.abs(Math.log(gridShape / slotShape));
-            if (w > best.cardWidth || (w === best.cardWidth && shapeError < best.shapeError))
-                best = { "cols": cols, "cardWidth": w, "shapeError": shapeError };
+            const byWidth = availW / cols - padW;
+            const byHeight = (availH / rows - padH) / thumbRatio;
+            const tw = Math.floor(Math.min(byWidth, byHeight, maxThumbWidth));
+            if (tw <= 0)
+                continue;
+            const cw = tw + padW;
+            const ch = Math.round(tw * thumbRatio) + padH;
+            const shapeError = Math.abs(Math.log((cols * cw) / Math.max(1, rows * ch) / slotShape));
+            if (tw > best.thumbWidth || (tw === best.thumbWidth && shapeError < best.shapeError))
+                best = { "cols": cols, "thumbWidth": tw, "cellWidth": cw, "cellHeight": ch, "shapeError": shapeError };
         }
         return best;
     }
 
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     location: PlasmaCore.Types.Floating
-    backgroundHints: PlasmaCore.Types.NoBackground
+    // The theme's own dialog frame: blur, contrast and shadow included.
+    backgroundHints: PlasmaCore.Types.StandardBackground
     type: PlasmaCore.Dialog.Normal
     visible: false
 
@@ -134,32 +167,32 @@ PlasmaCore.Dialog {
 
     // The dialog's only child is its content item.
     Item {
-        width: assist.slotWidth
-        height: assist.slotHeight
+        width: assist.contentWidth
+        height: assist.contentHeight
 
         Timer {
             id: refocusTimer
             interval: 150
             onTriggered: {
+                assist.place();
                 assist.raise();
                 assist.requestActivate();
                 content.forceActiveFocus();
             }
         }
 
-        // Dimmed backdrop of the free slot. Clicking it closes the picker.
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: assist.outerMargin
-            radius: assist.cfg.cornerRadius
-            color: Qt.rgba(0.08, 0.08, 0.1, assist.cfg.assistDim / 100)
-            border.color: Qt.rgba(1, 1, 1, 0.12)
-            border.width: 1
+        // Only here for its margins, like in the switcher.
+        KSvg.FrameSvgItem {
+            id: hoverItem
+            imagePath: "widgets/viewitem"
+            prefix: "hover"
+            visible: false
+        }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: assist.dismiss("clicked empty space")
-            }
+        // Clicking empty space closes the picker.
+        MouseArea {
+            anchors.fill: parent
+            onClicked: assist.dismiss("clicked empty space")
         }
 
         Item {
@@ -180,110 +213,95 @@ PlasmaCore.Dialog {
             Grid {
                 anchors.centerIn: parent
                 columns: assist.grid.cols
-                spacing: assist.gap
 
                 Repeater {
                     model: assist.candidates
 
-                    // One window, Windows 11 style: icon and title on top,
-                    // thumbnail below. Hover (or the keyboard) selects it; a
-                    // selected card is lit and shows a close button.
-                    delegate: Rectangle {
+                    // One window, as in the Thumbnail Grid switcher.
+                    delegate: MouseArea {
                         id: card
 
                         required property var modelData
                         required property int index
                         readonly property bool selected: assist.currentIndex === index
-                        readonly property int thumbHeight: Math.round(width * assist.thumbRatio)
-                        readonly property color hl: assist.cfg.highlightColor
 
-                        width: assist.grid.cardWidth
-                        height: thumbHeight + assist.labelHeight
-                        radius: Math.round(assist.cfg.cornerRadius * 5 / 6)
-                        color: selected ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(1, 1, 1, 0.06)
-                        border.color: selected ? Qt.rgba(hl.r, hl.g, hl.b, 0.9) : "transparent"
-                        border.width: 2
+                        width: assist.grid.cellWidth
+                        height: assist.grid.cellHeight
+                        hoverEnabled: true
+                        onEntered: assist.currentIndex = card.index
+                        onClicked: assist.picked(card.modelData, assist.slot)
 
-                        Behavior on color {
-                            ColorAnimation { duration: 120 }
-                        }
+                        Accessible.name: card.modelData.caption
+                        Accessible.role: Accessible.ListItem
 
-                        // Header: icon and title.
-                        Row {
-                            x: 10
-                            y: Math.round((assist.labelHeight - 18) / 2) + 2
-                            width: parent.width - 20 - (closeButton.visible ? closeButton.width + 4 : 0)
-                            spacing: 6
-
-                            Kirigami.Icon {
-                                width: 18
-                                height: 18
-                                source: card.modelData.icon
-                            }
-
-                            Text {
-                                width: parent.width - 24
-                                text: card.modelData.caption
-                                color: "white"
-                                elide: Text.ElideRight
-                                font.pixelSize: 13
-                            }
-                        }
-
-                        Item {
-                            x: 8
-                            y: assist.labelHeight
-                            width: parent.width - 16
-                            height: card.thumbHeight - 8
-
-                            KWinComponents.WindowThumbnail {
-                                anchors.fill: parent
-                                wId: card.modelData.internalId
-                                visible: !card.modelData.minimized
-                            }
-
-                            // Minimized windows have no live content; show the icon.
-                            Kirigami.Icon {
-                                anchors.centerIn: parent
-                                width: 64
-                                height: 64
-                                source: card.modelData.icon
-                                visible: card.modelData.minimized
-                            }
-                        }
-
-                        MouseArea {
+                        // The theme's highlight on the selected card.
+                        KSvg.FrameSvgItem {
                             anchors.fill: parent
-                            hoverEnabled: true
-                            onEntered: assist.currentIndex = card.index
-                            onClicked: assist.picked(card.modelData, assist.slot)
+                            imagePath: "widgets/viewitem"
+                            prefix: "hover"
+                            visible: card.selected
                         }
 
-                        // Close button, top right, only on the selected card.
-                        Rectangle {
-                            id: closeButton
+                        ColumnLayout {
+                            id: columnLayout
 
-                            width: 24
-                            height: 24
-                            x: parent.width - width - 6
-                            y: Math.round((assist.labelHeight - height) / 2) + 2
-                            radius: 6
-                            visible: card.selected
-                            color: closeMouse.containsMouse ? "#c42b1c" : Qt.rgba(1, 1, 1, 0.12)
+                            anchors.fill: parent
+                            anchors.leftMargin: hoverItem.margins.left * 2
+                            anchors.topMargin: hoverItem.margins.top * 2
+                            anchors.rightMargin: hoverItem.margins.right * 2
+                            anchors.bottomMargin: hoverItem.margins.bottom * 2
+                            spacing: assist.columnSpacing
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: "\u2715"
-                                color: "white"
-                                font.pixelSize: 12
+                            // WindowThumbnail needs a container, or it takes
+                            // the size of the whole layout.
+                            Item {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                KWinComponents.WindowThumbnail {
+                                    anchors.fill: parent
+                                    wId: card.modelData.internalId
+                                    visible: !card.modelData.minimized
+                                }
+
+                                // App icon over the bottom edge of the thumbnail;
+                                // centered and on its own for minimized windows,
+                                // which have no live content.
+                                Kirigami.Icon {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.verticalCenter: card.modelData.minimized ? parent.verticalCenter : parent.bottom
+                                    anchors.verticalCenterOffset: card.modelData.minimized ? 0 : Math.round(-assist.iconSize / 4)
+                                    width: assist.iconSize
+                                    height: assist.iconSize
+                                    source: card.modelData.icon
+                                }
+
+                                PlasmaComponents3.Button {
+                                    id: closeButton
+
+                                    anchors {
+                                        right: parent.right
+                                        top: parent.top
+                                        // Touch the inner edges of the highlight,
+                                        // as in the switcher.
+                                        rightMargin: -columnLayout.anchors.rightMargin
+                                        topMargin: -columnLayout.anchors.topMargin
+                                    }
+                                    visible: card.selected || card.containsMouse || hovered
+                                    icon.name: "window-close-symbolic"
+                                    Accessible.name: "Close " + card.modelData.caption
+                                    onClicked: assist.closeCandidate(card.modelData)
+                                }
                             }
 
-                            MouseArea {
-                                id: closeMouse
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: assist.closeCandidate(card.modelData)
+                            PlasmaComponents3.Label {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: assist.captionRowHeight
+                                text: card.modelData.caption
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                textFormat: Text.PlainText
+                                elide: Text.ElideRight
                             }
                         }
                     }

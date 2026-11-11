@@ -303,7 +303,7 @@ Item {
             if (edge) {
                 if (!edgeArmed || edgeArmed.slot.output !== edge.slot.output
                         || edgeArmed.slot.quickTile !== edge.slot.quickTile)
-                    outline.showAt(edge.slot.rect);
+                    outline.showAt(edge.slot.rect, workArea(edge.slot.output), w.frameGeometry);
                 edgeArmed = edge;
                 return;
             }
@@ -330,9 +330,9 @@ Item {
         root.maximizeArmed = cfg.maximizeAtTop && atTop && bar.hoveredSlot < 0;
         const outlineWasVisible = outline.visible;
         if (bar.hoveredSlot >= 0)
-            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot));
+            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot), topArea, w.frameGeometry);
         else if (root.maximizeArmed)
-            outline.showAt(topArea);
+            outline.showAt(topArea, topArea, w.frameGeometry);
         else
             outline.hide();
         // A freshly shown outline lands on top; keep the bar above it.
@@ -601,7 +601,7 @@ Item {
             bar.showOn(root.workArea(out), out);
             bar.hoveredLayout = bar.layouts.length - 1;
             bar.hoveredSlot = Math.min(1, bar.layouts[bar.hoveredLayout].length - 1);
-            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot));
+            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot), root.workArea(out), null);
             bar.bringToFront();
             selfTestAssistTimer.start();
         }
@@ -643,7 +643,7 @@ Item {
         interval: 400
         onTriggered: {
             const h = root.halves(root.workArea(root.selfTestScreen()));
-            root.openAssist({ "rect": h.right, "quickTile": "right" },
+            root.openAssist({ "rect": h.right, "quickTile": "right", "output": root.selfTestScreen() },
                         root.selfTestCandidates(anchor ? [anchor] : []));
             assist.currentIndex = 0; // show the hover look
             selfTestEndTimer.start();
@@ -670,34 +670,19 @@ Item {
         onClicked: function(pos) { root.catcherClicked(pos); }
     }
 
-    // Plain and blurred variants of the overlays; the options pick one.
+    // The overlays take their look from the Plasma theme; blur, contrast
+    // and shadow come with the theme's dialog frame.
     SlotOutline {
-        id: outlinePlain
+        id: outline
         cfg: cfg
     }
-
-    BlurredSlotOutline {
-        id: outlineBlurred
-        cfg: cfg
-    }
-
-    readonly property var outline: cfg.outlineBlur ? outlineBlurred : outlinePlain
 
     SnapAssist {
-        id: assistPlain
+        id: assist
         cfg: cfg
         onPicked: function(w, slot) { root.assistPicked(w, slot); }
         onVisibleChanged: root.assistVisibleChanged(visible)
     }
-
-    BlurredSnapAssist {
-        id: assistBlurred
-        cfg: cfg
-        onPicked: function(w, slot) { root.assistPicked(w, slot); }
-        onVisibleChanged: root.assistVisibleChanged(visible)
-    }
-
-    readonly property var assist: cfg.assistBlur ? assistBlurred : assistPlain
 
     function assistPicked(w, slot) {
         assist.dismiss();

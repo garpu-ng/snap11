@@ -1,10 +1,18 @@
 /*
  * Notice in the bottom right corner while KDE's own edge snapping is still on
  * (it would show its own outline next to Snap11's). It goes away by itself
- * once both KDE options are off; the X hides it until the next login.
+ * once both KDE options are off; the close button hides it until the next
+ * login.
+ *
+ * Styled like a Plasma notification popup: the theme's dialog frame, a
+ * warning icon, a heading and Plasma's own close button.
  */
 import QtQuick
+import QtQuick.Layouts
+import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
+import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents3
 
 PlasmaCore.Dialog {
     id: notice
@@ -12,12 +20,20 @@ PlasmaCore.Dialog {
     // Which KDE options are still on.
     property bool maximizeOn: false
     property bool tilingOn: false
-    // Hidden with the X, for this session.
+    // Hidden with the close button, for this session.
     property bool dismissed: false
 
-    readonly property int boxWidth: 420
-    readonly property int margin: 16
+    // Width of a Plasma notification popup.
+    readonly property int boxWidth: Kirigami.Units.gridUnit * 18
+    readonly property int margin: Kirigami.Units.largeSpacing
     property rect area: Qt.rect(0, 0, 0, 0)
+
+    function place() {
+        // Bottom right, where Plasma shows notifications, so it never
+        // covers window buttons at the top.
+        x = area.x + area.width - width - margin;
+        y = area.y + area.height - height - margin;
+    }
 
     function update(workArea, maximize, tiling) {
         area = workArea;
@@ -27,9 +43,9 @@ PlasmaCore.Dialog {
         if (show && !visible) {
             visible = true;
             // A Dialog re-centers itself when shown, so position it afterwards.
-            // Bottom right, so it never covers window buttons at the top.
-            x = area.x + area.width - boxWidth - margin;
-            y = area.y + area.height - height - margin;
+            place();
+        } else if (show) {
+            place();
         } else if (!show && visible) {
             visible = false;
         }
@@ -37,71 +53,75 @@ PlasmaCore.Dialog {
 
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus
     location: PlasmaCore.Types.Floating
-    backgroundHints: PlasmaCore.Types.NoBackground
+    backgroundHints: PlasmaCore.Types.StandardBackground
     type: PlasmaCore.Dialog.Normal
     visible: false
 
-    Rectangle {
+    // The text changes height when an option is switched; keep the corner.
+    onHeightChanged: if (visible) place()
+
+    Item {
         width: notice.boxWidth
-        height: body.implicitHeight + 28
-        radius: 12
-        color: Qt.rgba(0.11, 0.11, 0.13, 1)
-        border.color: "#f67400"
-        border.width: 2
+        height: layout.implicitHeight
 
-        Column {
-            id: body
+        RowLayout {
+            id: layout
 
-            x: 16
-            y: 14
-            width: parent.width - 32 - 28
-            spacing: 6
+            width: parent.width
+            spacing: Kirigami.Units.largeSpacing
 
-            Text {
-                width: parent.width
-                text: "Snap11: KDE's own edge snapping is still on"
-                color: "#f67400"
-                font.pixelSize: 14
-                font.bold: true
-                wrapMode: Text.WordWrap
+            Kirigami.Icon {
+                Layout.alignment: Qt.AlignTop
+                Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                Layout.preferredHeight: Kirigami.Units.iconSizes.large
+                source: "dialog-warning"
             }
 
-            Text {
-                width: parent.width
-                color: "white"
-                font.pixelSize: 13
-                wrapMode: Text.WordWrap
-                text: "Both would show at the same time. In System Settings > Screen Edges, turn off:"
-                      + (notice.maximizeOn ? "\n• Maximize: Drag windows to top edge" : "")
-                      + (notice.tilingOn ? "\n• Tile: Drag windows to the left or right edge" : "")
-                      + "\nThis notice goes away by itself."
-            }
-        }
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignTop
+                spacing: Kirigami.Units.smallSpacing
 
-        // Close: hide until the next login.
-        Rectangle {
-            width: 24
-            height: 24
-            x: parent.width - width - 10
-            y: 10
-            radius: 6
-            color: closeMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.18) : "transparent"
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
 
-            Text {
-                anchors.centerIn: parent
-                text: "✕"
-                color: "white"
-                font.pixelSize: 12
-            }
+                    Kirigami.Heading {
+                        Layout.fillWidth: true
+                        level: 4
+                        text: "KDE's own edge snapping is on"
+                        wrapMode: Text.WordWrap
+                        textFormat: Text.PlainText
+                    }
 
-            MouseArea {
-                id: closeMouse
+                    PlasmaComponents3.ToolButton {
+                        Layout.alignment: Qt.AlignTop
+                        icon.name: "window-close-symbolic"
+                        display: QQC2.AbstractButton.IconOnly
+                        text: "Hide until next login"
+                        onClicked: {
+                            notice.dismissed = true;
+                            notice.visible = false;
+                        }
+                    }
+                }
 
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: {
-                    notice.dismissed = true;
-                    notice.visible = false;
+                PlasmaComponents3.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.PlainText
+                    text: "Snap11 and KDE would both show a drop preview. In System Settings > Screen Edges, turn off:"
+                          + (notice.maximizeOn ? "\n• Maximize: Drag windows to top edge" : "")
+                          + (notice.tilingOn ? "\n• Tile: Drag windows to the left or right edge" : "")
+                }
+
+                PlasmaComponents3.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.PlainText
+                    opacity: 0.7
+                    font: Kirigami.Theme.smallFont
+                    text: "This message goes away by itself."
                 }
             }
         }
