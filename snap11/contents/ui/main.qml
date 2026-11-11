@@ -428,7 +428,10 @@ Item {
         const fill = cfg.fillSpace ? fillRect(a, side, dragged) : null;
         if (fill)
             return {
-                "slot": { "rect": fill, "quickTile": matches(fill, h[side]) ? side : "", "output": s },
+                // Still a quick tile: the neighbour becomes one too, with
+                // KDE's split moved to where they meet (see tileNeighbour),
+                // so both share KDE's resize handle.
+                "slot": { "rect": fill.rect, "quickTile": side, "output": s, "neighbour": fill.neighbour },
                 "others": []
             };
         return {
@@ -448,7 +451,8 @@ Item {
 
     // Free part of work area a when snapping to side: the space up to the
     // window snapped as a full-height column against the opposite edge.
-    // null when there is no such window (or it leaves too little room).
+    // { rect, neighbour }, or null when there is no such window (or it
+    // leaves too little room).
     function fillRect(a, side, dragged) {
         const t = tolerance;
         const stack = Workspace.stackingOrder;
@@ -468,9 +472,57 @@ Item {
             else if (side === "right" && Math.abs(g.x - a.x) <= t && g.x + g.width < a.x + a.width - t)
                 r = Qt.rect(g.x + g.width, a.y, a.x + a.width - (g.x + g.width), a.height);
             if (r && r.width >= a.width * 0.15)
-                return r;
+                return { "rect": r, "neighbour": w };
         }
         return null;
+    }
+
+    // A custom tile (KDE's tile editor) has a layout direction; a quick tile
+    // (edge drag, Meta+arrows) does not.
+    function isQuickTiled(w) {
+        return !!w.tile && w.tile.layoutDirection === undefined;
+    }
+
+    // Make n a KDE quick tile on its side (if it is not one already) and
+    // move KDE's split to n's current inner edge. A window quick tiled on
+    // the other side then fills exactly the rest, and the two share KDE's
+    // resize handle, like two halves do. side: where the new window goes.
+    // Returns false if n is in a custom tile; that is left alone.
+    function tileNeighbour(n, side) {
+        if (n.tile && !isQuickTiled(n))
+            return false;
+        const nSide = side === "left" ? "right" : "left";
+        const g = n.frameGeometry;
+        if (!n.tile) {
+            Workspace.activeWindow = n;
+            if (nSide === "right")
+                Workspace.slotWindowQuickTileRight();
+            else
+                Workspace.slotWindowQuickTileLeft();
+        }
+        const t = n.tile;
+        if (!t) {
+            log("could not quick tile '" + n.caption + "'");
+            return false;
+        }
+        const pad = t.padding || 0;
+        const tg = t.absoluteGeometry;
+        // Tile geometry is laid out in the work area, but resizeByPixels
+        // counts in the full screen width; scale so a side panel does not
+        // throw the split off.
+        const scale = n.output.geometry.width / Math.max(1, workArea(n.output).width);
+        let delta = 0;
+        if (nSide === "right") {
+            delta = (g.x - pad) - tg.x;
+            if (Math.abs(delta) > 1)
+                t.resizeByPixels(delta * scale, Qt.LeftEdge);
+        } else {
+            delta = (g.x + g.width + pad) - (tg.x + tg.width);
+            if (Math.abs(delta) > 1)
+                t.resizeByPixels(delta * scale, Qt.RightEdge);
+        }
+        log("quick tiled '" + n.caption + "' " + nSide + ", split moved by " + Math.round(delta) + " px");
+        return true;
     }
 
     function endTop() {
@@ -557,6 +609,11 @@ Item {
                 d.window.setMaximize(true, true);
                 return;
             }
+            // Filling the space next to a snapped window: tile that window
+            // first, so the new one lands in the matching quick tile. If
+            // that is not possible, just put the new window in the gap.
+            if (d.slot.neighbour && !root.tileNeighbour(d.slot.neighbour, d.slot.quickTile))
+                d.slot = { "rect": d.slot.rect, "quickTile": "", "output": d.slot.output };
             root.place(d.window, d.slot);
             if (d.edge ? cfg.edgeAssist : cfg.assistAfterBarDrop)
                 root.startAssist(d.others, [d.window]);

@@ -7,8 +7,9 @@ Snap11 now looks like it is part of Plasma, and follows your theme.
 - Fill available space, like Windows: with a window snapped against one
   side, snapping another window to the opposite edge makes it take exactly
   the space that is left (for example two thirds next to a third), and the
-  outline shows that while you drag. On by default (Behavior > Edge
-  snapping).
+  outline shows that while you drag. Both windows become KDE quick tiles
+  with the split where they meet, so dragging the border between them
+  resizes both, like two halves. On by default (Behavior > Edge snapping).
 - Drop preview: drawn like KWin's own quick tiling outline (the theme's
   translucent frame, no border along the screen edges) and slides out of
   the dragged window like KWin's does.
