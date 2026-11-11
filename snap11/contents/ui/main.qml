@@ -132,7 +132,7 @@ Item {
     // Put a window into a slot. Halves use KDE's native quick tiling, so the
     // shared resize handle between two tiled windows keeps working.
     function place(w, slot) {
-        log("placing '" + w.caption + "' into " + (slot.quickTile || "custom slot"));
+        log("placing '" + w.caption + "' into " + (slot.quickTile || (slot.tile ? "KDE tile" : "custom slot")));
         w.minimized = false;
         rememberSize(w, slot);
         // Leave any native tile first, or KWin snaps the window back (and a
@@ -140,6 +140,15 @@ Item {
         if (w.tile)
             w.tile = null;
         w.setMaximize(false, false);
+        if (slot.tile && !slot.quickTile) {
+            // A KDE custom tile: windows in neighbouring tiles share their
+            // resize borders.
+            w.frameGeometry = slot.rect;
+            w.tile = slot.tile;
+            Workspace.activeWindow = w;
+            log("  now at " + w.frameGeometry.x + "," + w.frameGeometry.y + " on " + w.output.name);
+            return;
+        }
         if (slot.quickTile) {
             // Quick tiling works on the window's current screen, so bring it
             // to the slot's screen first, but at its own size: KDE remembers
@@ -477,6 +486,119 @@ Item {
         return null;
     }
 
+    // KDE's custom tiles (the ones from the tile editor, Meta+T) for the
+    // current desktop on a screen.
+    function customRoot(output) {
+        try {
+            if (Workspace.rootTile)
+                return Workspace.rootTile(output, Workspace.currentDesktop);
+        } catch (e) {
+            log("rootTile failed: " + e);
+        }
+        const tm = Workspace.tilingForScreen ? Workspace.tilingForScreen(output) : null;
+        return tm ? tm.rootTile : null;
+    }
+
+    // Tiles without children, depth first.
+    function leafTiles(t) {
+        const kids = t.tiles || [];
+        if (kids.length === 0)
+            return [t];
+        let out = [];
+        for (let i = 0; i < kids.length; i++)
+            out = out.concat(leafTiles(kids[i]));
+        return out;
+    }
+
+    function rectOf(g) {
+        return Qt.rect(g.x, g.y, g.width, g.height);
+    }
+
+    // For each slot, the leaf tile that covers it, or null if one is missing.
+    function tilesForSlots(root, slots) {
+        const leaves = leafTiles(root);
+        const found = [];
+        for (let i = 0; i < slots.length; i++) {
+            let hit = null;
+            for (let j = 0; j < leaves.length && !hit; j++) {
+                if (matches(rectOf(leaves[j].absoluteGeometry), slots[i].rect))
+                    hit = leaves[j];
+            }
+            if (!hit)
+                return null;
+            found.push(hit);
+        }
+        return found;
+    }
+
+    // Move tile t's right (or bottom) edge to fraction f of work area a.
+    // resizeByPixels counts in full screen pixels, tiles in the work area.
+    function setTileEdge(t, edge, f, a, output) {
+        const g = t.absoluteGeometry;
+        if (edge === Qt.RightEdge) {
+            const cur = (g.x + g.width - a.x) / a.width;
+            t.resizeByPixels((f - cur) * output.geometry.width, Qt.RightEdge);
+        } else {
+            const cur = (g.y + g.height - a.y) / a.height;
+            t.resizeByPixels((f - cur) * output.geometry.height, Qt.BottomEdge);
+        }
+    }
+
+    // Lay out KDE's custom tiles on the slots' screen to match the slots
+    // (columns, or quarters), unless they already do, and give every slot
+    // its tile. Replaces the tile editor's layout on that screen. Without
+    // tiles the slots are filled by geometry, as before.
+    function attachTiles(slots) {
+        const output = slots[0].output;
+        const root = output ? customRoot(output) : null;
+        if (!root || !root.split) {
+            log("no KDE custom tiles here, placing by geometry");
+            return;
+        }
+        let tiles = tilesForSlots(root, slots);
+        if (!tiles) {
+            const a = workArea(output);
+            const horizontal = 1, vertical = 2; // KWin::Tile::LayoutDirection
+            const kids = (root.tiles || []).slice();
+            for (let i = 0; i < kids.length; i++)
+                kids[i].remove();
+            // Distinct column edges and row edges of the slots, as fractions.
+            const xs = [], ys = [];
+            for (let i = 0; i < slots.length; i++) {
+                const r = slots[i].rect;
+                const fx = Math.round((r.x + r.width - a.x) / a.width * 1000) / 1000;
+                const fy = Math.round((r.y + r.height - a.y) / a.height * 1000) / 1000;
+                if (fx < 0.999 && xs.indexOf(fx) < 0)
+                    xs.push(fx);
+                if (fy < 0.999 && ys.indexOf(fy) < 0)
+                    ys.push(fy);
+            }
+            xs.sort(function(p, q) { return p - q; });
+            // Columns: split the root, then keep splitting the last column.
+            // The new tiles are read back from .tiles, in layout order.
+            root.split(horizontal);
+            for (let guard = 0; root.tiles.length < xs.length + 1 && guard < 8; guard++)
+                root.tiles[root.tiles.length - 1].split(horizontal);
+            const cols = root.tiles.slice();
+            for (let i = 0; i < xs.length && i < cols.length; i++)
+                setTileEdge(cols[i], Qt.RightEdge, xs[i], a, output);
+            // Rows (quarters): split every column once.
+            if (ys.length === 1) {
+                for (let i = 0; i < cols.length; i++) {
+                    cols[i].split(vertical);
+                    if (cols[i].tiles.length > 0)
+                        setTileEdge(cols[i].tiles[0], Qt.BottomEdge, ys[0], a, output);
+                }
+            }
+            tiles = tilesForSlots(root, slots);
+            log("KDE tiles laid out: " + (tiles ? "ok" : "no match, placing by geometry"));
+            if (!tiles)
+                return;
+        }
+        for (let i = 0; i < slots.length; i++)
+            slots[i].tile = tiles[i];
+    }
+
     // A custom tile (KDE's tile editor) has a layout direction; a quick tile
     // (edge drag, Meta+arrows) does not.
     function isQuickTiled(w) {
@@ -546,7 +668,7 @@ Item {
                 if (i !== si)
                     others.push(bar.slot(li, i));
             }
-            root.pendingDrop = { "window": w, "slot": bar.slot(li, si), "others": others };
+            root.pendingDrop = { "window": w, "slot": bar.slot(li, si), "others": others, "bar": true };
             dropTimer.restart();
         } else if (topActive && root.maximizeArmed) {
             root.pendingDrop = { "window": w, "maximize": true };
@@ -609,6 +731,10 @@ Item {
                 d.window.setMaximize(true, true);
                 return;
             }
+            // A bar layout other than halves: lay out KDE's custom tiles
+            // like it, so the windows share resize borders.
+            if (d.bar && !d.slot.quickTile && cfg.kdeTiles)
+                root.attachTiles([d.slot].concat(d.others));
             // Filling the space next to a snapped window: tile that window
             // first, so the new one lands in the matching quick tile. If
             // that is not possible, just put the new window in the gap.

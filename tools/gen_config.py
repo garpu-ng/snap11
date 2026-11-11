@@ -53,6 +53,7 @@ OPTIONS = [
              ("LayoutTwoThirdsRight", "Bool", False, "One third + two thirds", None),
              ("LayoutQuarters", "Bool", False, "Quarters", None),
              ("AssistAfterBarDrop", "Bool", True, "Offer windows for the other slots afterwards", None),
+             ("KdeTiles", "Bool", True, "Use KDE's tiles, so windows share resize borders (replaces the tile editor's layout on that screen)", None),
          ]},
         {"title": "Top edge", "options": [
             ("MaximizeAtTop", "Bool", True, "Maximize when dropped at the top edge", None),

@@ -128,6 +128,11 @@
                             <property name="text"><string>Offer windows for the other slots afterwards</string></property>
                           </widget>
                         </item>
+                        <item row="6" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_KdeTiles">
+                            <property name="text"><string>Use KDE's tiles, so windows share resize borders (replaces the tile editor's layout on that screen)</string></property>
+                          </widget>
+                        </item>
                       </layout>
                     </item>
                   </layout>

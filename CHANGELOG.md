@@ -10,6 +10,10 @@ Snap11 now looks like it is part of Plasma, and follows your theme.
   outline shows that while you drag. Both windows become KDE quick tiles
   with the split where they meet, so dragging the border between them
   resizes both, like two halves. On by default (Behavior > Edge snapping).
+- Layouts from the bar (thirds, two thirds + one third, quarters) use KDE's
+  own tiles, so windows next to each other share a resize border there
+  too. This replaces the layout from KDE's tile editor (Meta+T) on that
+  screen; turn it off under Behavior > Snap layout bar.
 - Drop preview: drawn like KWin's own quick tiling outline (the theme's
   translucent frame, no border along the screen edges) and slides out of
   the dragged window like KWin's does.

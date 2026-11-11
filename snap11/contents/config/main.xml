@@ -48,6 +48,9 @@
     <entry name="AssistAfterBarDrop" type="Bool">
       <default>true</default>
     </entry>
+    <entry name="KdeTiles" type="Bool">
+      <default>true</default>
+    </entry>
     <entry name="MaximizeAtTop" type="Bool">
       <default>true</default>
     </entry>

@@ -30,6 +30,8 @@ it takes exactly the space that is left, like in Windows.
 (halves and thirds) appears at the top center. Move over the slot where the
 window should go, and an outline shows where it will land. Drop it there.
 Snap Assist then offers windows for the remaining slots, one after another.
+The slots are KDE's own tiles, so dragging the border between two windows
+resizes both.
 
 **Maximize.** Drop a window right at the top edge, away from the bar slots,
 and it is maximized, just like in Plasma and Windows.

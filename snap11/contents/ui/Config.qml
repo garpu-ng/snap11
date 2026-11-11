@@ -24,6 +24,7 @@ QtObject {
     property bool layoutTwoThirdsRight: false
     property bool layoutQuarters: false
     property bool assistAfterBarDrop: true
+    property bool kdeTiles: true
     property bool maximizeAtTop: true
     property int topTrigger: 6
     property bool includeMinimized: true
@@ -50,6 +51,7 @@ QtObject {
         layoutTwoThirdsRight = KWin.readConfig("LayoutTwoThirdsRight", false);
         layoutQuarters = KWin.readConfig("LayoutQuarters", false);
         assistAfterBarDrop = KWin.readConfig("AssistAfterBarDrop", true);
+        kdeTiles = KWin.readConfig("KdeTiles", true);
         maximizeAtTop = KWin.readConfig("MaximizeAtTop", true);
         topTrigger = KWin.readConfig("TopTrigger", 6);
         includeMinimized = KWin.readConfig("IncludeMinimized", true);
