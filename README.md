@@ -22,6 +22,10 @@ a thumbnail highlights it and shows a close button; arrow keys and Enter
 work too. Escape or a click anywhere else closes the picker. If a window is
 already snapped into the free part, no thumbnails appear, like in Windows.
 
+**Fill available space.** With a window already snapped against one side
+(a half, a third, two thirds), drag another window to the opposite edge:
+it takes exactly the space that is left, like in Windows.
+
 **Snap layout bar.** Drag a window to the top edge. A small bar with layouts
 (halves and thirds) appears at the top center. Move over the slot where the
 window should go, and an outline shows where it will land. Drop it there.

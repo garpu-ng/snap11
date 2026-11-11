@@ -18,6 +18,9 @@
     <entry name="CornerQuarters" type="Bool">
       <default>true</default>
     </entry>
+    <entry name="FillSpace" type="Bool">
+      <default>true</default>
+    </entry>
     <entry name="InnerEdgeWidth" type="Int">
       <default>10</default>
     </entry>

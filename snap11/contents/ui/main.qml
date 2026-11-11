@@ -299,7 +299,7 @@ Item {
         // Left and right screen edges (and their corners). These come before
         // the top edge, so a top corner snaps to a quarter like in Windows.
         if (!topActive) {
-            const edge = edgeAt(p);
+            const edge = edgeAt(p, w);
             if (edge) {
                 if (!edgeArmed || edgeArmed.slot.output !== edge.slot.output
                         || edgeArmed.slot.quickTile !== edge.slot.quickTile)
@@ -387,7 +387,7 @@ Item {
     // tiling (so everything looks the same); inner edges, where two monitors
     // meet, are something KDE does not do at all. Near the top or bottom of
     // an edge, the window snaps to a quarter.
-    function edgeAt(p) {
+    function edgeAt(p, dragged) {
         const s = screenAt(p);
         if (!s)
             return null;
@@ -423,10 +423,54 @@ Item {
         }
         const h = halves(a);
         const other = side === "left" ? "right" : "left";
+        // Like Windows: next to a window already snapped on the other side,
+        // take exactly the space it leaves, and offer nothing afterwards.
+        const fill = cfg.fillSpace ? fillRect(a, side, dragged) : null;
+        if (fill)
+            return {
+                "slot": { "rect": fill, "quickTile": matches(fill, h[side]) ? side : "", "output": s },
+                "others": []
+            };
         return {
             "slot": { "rect": h[side], "quickTile": side, "output": s },
             "others": [{ "rect": h[other], "quickTile": other, "output": s }]
         };
+    }
+
+    // Is w snapped? Natively tiled by KDE (quick tiling, Meta+arrows), or
+    // put into a slot by Snap11 and still sitting there.
+    function isSnapped(w) {
+        if (w.tile)
+            return true;
+        const e = presnap[w.internalId.toString()];
+        return !!e && matches(w.frameGeometry, e.rect);
+    }
+
+    // Free part of work area a when snapping to side: the space up to the
+    // window snapped as a full-height column against the opposite edge.
+    // null when there is no such window (or it leaves too little room).
+    function fillRect(a, side, dragged) {
+        const t = tolerance;
+        const stack = Workspace.stackingOrder;
+        // Topmost first: the one the user sees counts.
+        for (let i = stack.length - 1; i >= 0; i--) {
+            const w = stack[i];
+            if (w === dragged || !isNormal(w) || w.minimized || w.pid <= 0 || !onCurrentDesktop(w))
+                continue;
+            const g = w.frameGeometry;
+            const fullHeight = Math.abs(g.y - a.y) <= t
+                && Math.abs(g.y + g.height - (a.y + a.height)) <= t;
+            if (!fullHeight || g.width >= a.width - 2 * t || !isSnapped(w))
+                continue;
+            let r = null;
+            if (side === "left" && Math.abs(g.x + g.width - (a.x + a.width)) <= t && g.x > a.x + t)
+                r = Qt.rect(a.x, a.y, g.x - a.x, a.height);
+            else if (side === "right" && Math.abs(g.x - a.x) <= t && g.x + g.width < a.x + a.width - t)
+                r = Qt.rect(g.x + g.width, a.y, a.x + a.width - (g.x + g.width), a.height);
+            if (r && r.width >= a.width * 0.15)
+                return r;
+        }
+        return null;
     }
 
     function endTop() {

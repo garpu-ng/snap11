@@ -39,6 +39,7 @@ OPTIONS = [
              ("OuterEdgeSnap", "Bool", True, "Snap at the outer screen edges", None),
              ("InnerEdgeSnap", "Bool", True, "Snap at the edges between monitors", None),
              ("CornerQuarters", "Bool", True, "Snap to a quarter near the corners", None),
+             ("FillSpace", "Bool", True, "Next to a snapped window, fill the space that is left", None),
              ("InnerEdgeWidth", "Int", 10, "Snap zone width:", (2, 60, " px")),
              ("RestoreSize", "Bool", True, "Restore a window's size when you drag it out of a snap", None),
          ]},

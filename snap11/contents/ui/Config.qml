@@ -15,6 +15,7 @@ QtObject {
     property bool innerEdgeSnap: true
     property bool cornerQuarters: true
     property bool restoreSize: true
+    property bool fillSpace: true
     property int innerEdgeWidth: 10
     property bool layoutBar: true
     property bool layoutHalves: true
@@ -40,6 +41,7 @@ QtObject {
         innerEdgeSnap = KWin.readConfig("InnerEdgeSnap", true);
         cornerQuarters = KWin.readConfig("CornerQuarters", true);
         restoreSize = KWin.readConfig("RestoreSize", true);
+        fillSpace = KWin.readConfig("FillSpace", true);
         innerEdgeWidth = KWin.readConfig("InnerEdgeWidth", 10);
         layoutBar = KWin.readConfig("LayoutBar", true);
         layoutHalves = KWin.readConfig("LayoutHalves", true);

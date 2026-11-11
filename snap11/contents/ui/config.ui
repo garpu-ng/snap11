@@ -58,19 +58,24 @@
                             <property name="text"><string>Snap to a quarter near the corners</string></property>
                           </widget>
                         </item>
-                        <item row="3" column="0">
+                        <item row="3" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_FillSpace">
+                            <property name="text"><string>Next to a snapped window, fill the space that is left</string></property>
+                          </widget>
+                        </item>
+                        <item row="4" column="0">
                           <widget class="QLabel" name="label_10">
                             <property name="text"><string>Snap zone width:</string></property>
                           </widget>
                         </item>
-                        <item row="3" column="1">
+                        <item row="4" column="1">
                           <widget class="QSpinBox" name="kcfg_InnerEdgeWidth">
                             <property name="minimum"><number>2</number></property>
                             <property name="maximum"><number>60</number></property>
                             <property name="suffix"><string> px</string></property>
                           </widget>
                         </item>
-                        <item row="4" column="0" colspan="2">
+                        <item row="5" column="0" colspan="2">
                           <widget class="QCheckBox" name="kcfg_RestoreSize">
                             <property name="text"><string>Restore a window's size when you drag it out of a snap</string></property>
                           </widget>
