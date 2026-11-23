@@ -19,12 +19,16 @@ QtObject {
             Sim.check(Qt.colorEqual(f.flyoutFill, "#f52c2c2c"), "dark: flyout is #2C2C2C");
             Sim.check(f.accentFill.hslLightness > blue.hslLightness + 0.2,
                       "dark: accent fill is a lighter variant of the accent (" + f.accentFill + ")");
+            Sim.setAccent("#3daee9");
             Sim.checkEq(f.overlayRadius, 8, "overlay corner radius");
             Sim.checkEq(f.controlRadius, 4, "control corner radius");
             Sim.checkRect(f.zoneRect(Qt.rect(0, 0, 960, 1036), Qt.rect(0, 0, 1920, 1036)),
                           Qt.rect(8, 8, 948, 1020), "left half zone is inset 8 outside, 4 inside");
             Sim.checkRect(f.zoneRect(Qt.rect(640, 0, 640, 1036), Qt.rect(0, 0, 1920, 1036)),
                           Qt.rect(644, 8, 632, 1020), "middle third zone");
+            Sim.check(f.accentFill.hslLightness < 0.78,
+                      "dark: a light accent (Breeze blue) still gives a colored fill (" + f.accentFill + ")");
+            Sim.setAccent("#0078d4");
             Sim.checkEq(f.durFast, 167, "fast duration at normal animation speed");
             Sim.checkEq(f.durNormal, 250, "normal duration at normal animation speed");
             Sim.setDark(false);

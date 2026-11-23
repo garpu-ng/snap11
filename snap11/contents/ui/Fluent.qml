@@ -21,8 +21,11 @@ Item {
 
     // The system accent, and Windows' accent fill made from it:
     // SystemAccentColorLight2 in dark mode, SystemAccentColorDark1 in light.
+    // Like Windows, the shift depends on how light the accent already is
+    // (#0078D4 gives about #60CDFF and #005FB8, Windows' own values).
     readonly property color accent: Kirigami.Theme.highlightColor
-    readonly property color accentFill: accentVariant(accent, dark ? 0.27 : -0.06)
+    readonly property color accentFill: accentVariant(accent, dark ? (0.85 - accent.hslLightness) * 0.6
+                                                                 : -(accent.hslLightness - 0.15) * 0.2)
 
     // Text (TextFillColorPrimary / Secondary).
     readonly property color textPrimary: dark ? "#FFFFFF" : "#E4000000"

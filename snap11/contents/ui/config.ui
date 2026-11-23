@@ -92,7 +92,7 @@
                   <layout class="QVBoxLayout" name="vbox_11">
                     <item>
                       <widget class="QLabel" name="label_12">
-                        <property name="text"><string>Drag a window to the top edge. A small bar with layouts appears; drop the window on the slot where it should go.</string></property>
+                        <property name="text"><string>Like Windows 11: when you drag a window, a small bar slides in at the top of the screen. Drag the window onto it to see the layouts, and drop it on the zone where it should go.</string></property>
                         <property name="wordWrap"><bool>true</bool></property>
                       </widget>
                     </item>
@@ -100,22 +100,22 @@
                       <layout class="QFormLayout" name="form_13">
                         <item row="0" column="0" colspan="2">
                           <widget class="QCheckBox" name="kcfg_LayoutHalves">
-                            <property name="text"><string>Halves</string></property>
+                            <property name="text"><string>50 / 50</string></property>
                           </widget>
                         </item>
                         <item row="1" column="0" colspan="2">
-                          <widget class="QCheckBox" name="kcfg_LayoutThirds">
-                            <property name="text"><string>Thirds</string></property>
+                          <widget class="QCheckBox" name="kcfg_LayoutTwoThirdsLeft">
+                            <property name="text"><string>66 / 33</string></property>
                           </widget>
                         </item>
                         <item row="2" column="0" colspan="2">
-                          <widget class="QCheckBox" name="kcfg_LayoutTwoThirdsLeft">
-                            <property name="text"><string>Two thirds + one third</string></property>
+                          <widget class="QCheckBox" name="kcfg_LayoutThirds">
+                            <property name="text"><string>33 / 33 / 33</string></property>
                           </widget>
                         </item>
                         <item row="3" column="0" colspan="2">
-                          <widget class="QCheckBox" name="kcfg_LayoutTwoThirdsRight">
-                            <property name="text"><string>One third + two thirds</string></property>
+                          <widget class="QCheckBox" name="kcfg_LayoutHalfQuarters">
+                            <property name="text"><string>50 + two quarters</string></property>
                           </widget>
                         </item>
                         <item row="4" column="0" colspan="2">
@@ -124,11 +124,26 @@
                           </widget>
                         </item>
                         <item row="5" column="0" colspan="2">
-                          <widget class="QCheckBox" name="kcfg_AssistAfterBarDrop">
-                            <property name="text"><string>Offer windows for the other slots afterwards</string></property>
+                          <widget class="QCheckBox" name="kcfg_LayoutCenterWide">
+                            <property name="text"><string>25 / 50 / 25</string></property>
                           </widget>
                         </item>
                         <item row="6" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_LayoutTwoThirdsRight">
+                            <property name="text"><string>33 / 66 (not in Windows)</string></property>
+                          </widget>
+                        </item>
+                        <item row="7" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_ThreeColumnsWideOnly">
+                            <property name="text"><string>Three-column layouts only on wide screens (1920 px and up), like Windows</string></property>
+                          </widget>
+                        </item>
+                        <item row="8" column="0" colspan="2">
+                          <widget class="QCheckBox" name="kcfg_AssistAfterBarDrop">
+                            <property name="text"><string>Offer windows for the other zones afterwards</string></property>
+                          </widget>
+                        </item>
+                        <item row="9" column="0" colspan="2">
                           <widget class="QCheckBox" name="kcfg_KdeTiles">
                             <property name="text"><string>Use KDE's tiles, so windows share resize borders (replaces the tile editor's layout on that screen)</string></property>
                           </widget>
@@ -203,7 +218,7 @@
                   <layout class="QVBoxLayout" name="vbox_25">
                     <item>
                       <widget class="QLabel" name="label_26">
-                        <property name="text"><string>Colors, frames, blur and shadows follow your Plasma theme and accent color, like KWin's own popups and its tiling outline.</string></property>
+                        <property name="text"><string>Snap11 looks like Windows 11. Light or dark and the accent color follow your system settings, like in Windows.</string></property>
                         <property name="wordWrap"><bool>true</bool></property>
                       </widget>
                     </item>
@@ -211,34 +226,22 @@
                       <layout class="QFormLayout" name="form_27">
                         <item row="0" column="0">
                           <widget class="QLabel" name="label_28">
-                            <property name="text"><string>Layout preview width:</string></property>
+                            <property name="text"><string>Layout width in the snap bar:</string></property>
                           </widget>
                         </item>
                         <item row="0" column="1">
                           <widget class="QSpinBox" name="kcfg_PreviewWidth">
-                            <property name="minimum"><number>60</number></property>
-                            <property name="maximum"><number>300</number></property>
+                            <property name="minimum"><number>48</number></property>
+                            <property name="maximum"><number>200</number></property>
                             <property name="suffix"><string> px</string></property>
                           </widget>
                         </item>
                         <item row="1" column="0">
                           <widget class="QLabel" name="label_29">
-                            <property name="text"><string>Layout preview height:</string></property>
+                            <property name="text"><string>Maximum thumbnail width in Snap Assist:</string></property>
                           </widget>
                         </item>
                         <item row="1" column="1">
-                          <widget class="QSpinBox" name="kcfg_PreviewHeight">
-                            <property name="minimum"><number>30</number></property>
-                            <property name="maximum"><number>200</number></property>
-                            <property name="suffix"><string> px</string></property>
-                          </widget>
-                        </item>
-                        <item row="2" column="0">
-                          <widget class="QLabel" name="label_30">
-                            <property name="text"><string>Maximum thumbnail width in the window picker:</string></property>
-                          </widget>
-                        </item>
-                        <item row="2" column="1">
                           <widget class="QSpinBox" name="kcfg_AssistMaxCardWidth">
                             <property name="minimum"><number>120</number></property>
                             <property name="maximum"><number>800</number></property>
@@ -251,7 +254,7 @@
                 </widget>
               </item>
               <item>
-                <spacer name="spacer_31">
+                <spacer name="spacer_30">
                   <property name="orientation"><enum>Qt::Vertical</enum></property>
                 </spacer>
               </item>

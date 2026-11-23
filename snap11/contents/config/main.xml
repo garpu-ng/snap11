@@ -33,17 +33,26 @@
     <entry name="LayoutHalves" type="Bool">
       <default>true</default>
     </entry>
+    <entry name="LayoutTwoThirdsLeft" type="Bool">
+      <default>true</default>
+    </entry>
     <entry name="LayoutThirds" type="Bool">
       <default>true</default>
     </entry>
-    <entry name="LayoutTwoThirdsLeft" type="Bool">
-      <default>false</default>
+    <entry name="LayoutHalfQuarters" type="Bool">
+      <default>true</default>
+    </entry>
+    <entry name="LayoutQuarters" type="Bool">
+      <default>true</default>
+    </entry>
+    <entry name="LayoutCenterWide" type="Bool">
+      <default>true</default>
     </entry>
     <entry name="LayoutTwoThirdsRight" type="Bool">
       <default>false</default>
     </entry>
-    <entry name="LayoutQuarters" type="Bool">
-      <default>false</default>
+    <entry name="ThreeColumnsWideOnly" type="Bool">
+      <default>true</default>
     </entry>
     <entry name="AssistAfterBarDrop" type="Bool">
       <default>true</default>
@@ -64,10 +73,7 @@
       <default>false</default>
     </entry>
     <entry name="PreviewWidth" type="Int">
-      <default>120</default>
-    </entry>
-    <entry name="PreviewHeight" type="Int">
-      <default>64</default>
+      <default>80</default>
     </entry>
     <entry name="AssistMaxCardWidth" type="Int">
       <default>320</default>

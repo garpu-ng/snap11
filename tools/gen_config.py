@@ -44,15 +44,19 @@ OPTIONS = [
              ("RestoreSize", "Bool", True, "Restore a window's size when you drag it out of a snap", None),
          ]},
         {"title": "Snap layout bar at the top edge", "toggle": ("LayoutBar", True),
-         "text": "Drag a window to the top edge. A small bar with layouts appears; "
-                 "drop the window on the slot where it should go.",
+         "text": "Like Windows 11: when you drag a window, a small bar slides in at the top "
+                 "of the screen. Drag the window onto it to see the layouts, and drop it on "
+                 "the zone where it should go.",
          "options": [
-             ("LayoutHalves", "Bool", True, "Halves", None),
-             ("LayoutThirds", "Bool", True, "Thirds", None),
-             ("LayoutTwoThirdsLeft", "Bool", False, "Two thirds + one third", None),
-             ("LayoutTwoThirdsRight", "Bool", False, "One third + two thirds", None),
-             ("LayoutQuarters", "Bool", False, "Quarters", None),
-             ("AssistAfterBarDrop", "Bool", True, "Offer windows for the other slots afterwards", None),
+             ("LayoutHalves", "Bool", True, "50 / 50", None),
+             ("LayoutTwoThirdsLeft", "Bool", True, "66 / 33", None),
+             ("LayoutThirds", "Bool", True, "33 / 33 / 33", None),
+             ("LayoutHalfQuarters", "Bool", True, "50 + two quarters", None),
+             ("LayoutQuarters", "Bool", True, "Quarters", None),
+             ("LayoutCenterWide", "Bool", True, "25 / 50 / 25", None),
+             ("LayoutTwoThirdsRight", "Bool", False, "33 / 66 (not in Windows)", None),
+             ("ThreeColumnsWideOnly", "Bool", True, "Three-column layouts only on wide screens (1920 px and up), like Windows", None),
+             ("AssistAfterBarDrop", "Bool", True, "Offer windows for the other zones afterwards", None),
              ("KdeTiles", "Bool", True, "Use KDE's tiles, so windows share resize borders (replaces the tile editor's layout on that screen)", None),
          ]},
         {"title": "Top edge", "options": [
@@ -66,12 +70,11 @@ OPTIONS = [
     ]),
     ("Appearance", [
         {"title": "Sizes",
-         "text": "Colors, frames, blur and shadows follow your Plasma theme and accent "
-                 "color, like KWin's own popups and its tiling outline.",
+         "text": "Snap11 looks like Windows 11. Light or dark and the accent color follow "
+                 "your system settings, like in Windows.",
          "options": [
-            ("PreviewWidth", "Int", 120, "Layout preview width:", (60, 300, " px")),
-            ("PreviewHeight", "Int", 64, "Layout preview height:", (30, 200, " px")),
-            ("AssistMaxCardWidth", "Int", 320, "Maximum thumbnail width in the window picker:", (120, 800, " px")),
+            ("PreviewWidth", "Int", 80, "Layout width in the snap bar:", (48, 200, " px")),
+            ("AssistMaxCardWidth", "Int", 320, "Maximum thumbnail width in Snap Assist:", (120, 800, " px")),
         ]},
     ]),
 ]

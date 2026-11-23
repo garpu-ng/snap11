@@ -19,10 +19,13 @@ QtObject {
     property int innerEdgeWidth: 10
     property bool layoutBar: true
     property bool layoutHalves: true
+    property bool layoutTwoThirdsLeft: true
     property bool layoutThirds: true
-    property bool layoutTwoThirdsLeft: false
+    property bool layoutHalfQuarters: true
+    property bool layoutQuarters: true
+    property bool layoutCenterWide: true
     property bool layoutTwoThirdsRight: false
-    property bool layoutQuarters: false
+    property bool threeColumnsWideOnly: true
     property bool assistAfterBarDrop: true
     property bool kdeTiles: true
     property bool maximizeAtTop: true
@@ -30,10 +33,9 @@ QtObject {
     property bool includeMinimized: true
     property bool currentScreenOnly: false
 
-    // Look. Colors, frames, blur and corners come from the Plasma theme
-    // and the accent color, like KWin's own popups; only sizes are options.
-    property int previewWidth: 120
-    property int previewHeight: 64
+    // Look: Windows 11, light/dark and accent from the system (Fluent.qml);
+    // only sizes are options.
+    property int previewWidth: 80
     property int assistMaxCardWidth: 320
 
     function load() {
@@ -46,10 +48,13 @@ QtObject {
         innerEdgeWidth = KWin.readConfig("InnerEdgeWidth", 10);
         layoutBar = KWin.readConfig("LayoutBar", true);
         layoutHalves = KWin.readConfig("LayoutHalves", true);
+        layoutTwoThirdsLeft = KWin.readConfig("LayoutTwoThirdsLeft", true);
         layoutThirds = KWin.readConfig("LayoutThirds", true);
-        layoutTwoThirdsLeft = KWin.readConfig("LayoutTwoThirdsLeft", false);
+        layoutHalfQuarters = KWin.readConfig("LayoutHalfQuarters", true);
+        layoutQuarters = KWin.readConfig("LayoutQuarters", true);
+        layoutCenterWide = KWin.readConfig("LayoutCenterWide", true);
         layoutTwoThirdsRight = KWin.readConfig("LayoutTwoThirdsRight", false);
-        layoutQuarters = KWin.readConfig("LayoutQuarters", false);
+        threeColumnsWideOnly = KWin.readConfig("ThreeColumnsWideOnly", true);
         assistAfterBarDrop = KWin.readConfig("AssistAfterBarDrop", true);
         kdeTiles = KWin.readConfig("KdeTiles", true);
         maximizeAtTop = KWin.readConfig("MaximizeAtTop", true);
@@ -57,8 +62,7 @@ QtObject {
         includeMinimized = KWin.readConfig("IncludeMinimized", true);
         currentScreenOnly = KWin.readConfig("CurrentScreenOnly", false);
 
-        previewWidth = KWin.readConfig("PreviewWidth", 120);
-        previewHeight = KWin.readConfig("PreviewHeight", 64);
+        previewWidth = KWin.readConfig("PreviewWidth", 80);
         assistMaxCardWidth = KWin.readConfig("AssistMaxCardWidth", 320);
     }
 }

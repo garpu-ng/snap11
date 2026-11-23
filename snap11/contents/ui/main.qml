@@ -8,12 +8,12 @@
  *     its screen. If so, thumbnails of the other windows appear in the free
  *     half. Clicking one quick-tiles it there.
  *
- * Snap layout bar:
- *   - Drag a window to the top edge. A small bar with layouts (halves,
- *     thirds) appears at the top center. Drop the window on a slot and it
- *     lands there; then Snap Assist offers windows for the other slots,
- *     one slot after the other.
- *   - Dropping right at the top edge, but not on a slot, maximizes.
+ * Snap layout bar, like Windows 11:
+ *   - As soon as a window is dragged, a small bar slides in at the top
+ *     center. Drag the window onto it and it opens up with Windows' layouts.
+ *     Drop the window on a zone and it lands there; then Snap Assist offers
+ *     windows for the other zones, one zone after the other.
+ *   - Dropping right at the top edge, but not on a zone, maximizes.
  *   - Needs KDE's "drag to top edge maximizes" turned off
  *     (kwinrc [Windows] ElectricBorderMaximize=false).
  *
@@ -51,10 +51,6 @@ Item {
     property var pendingDrop: null
     // Cursor is at the top edge but not on a bar slot: dropping maximizes.
     property bool maximizeArmed: false
-    // The drag reached the top edge (bar and/or maximize are in play), and
-    // the work area of that screen.
-    property bool topActive: false
-    property rect topArea: Qt.rect(0, 0, 0, 0)
     // The cursor sits in the snap zone at an inner screen edge (where two
     // monitors meet): { slot, others }, or null.
     property var edgeArmed: null
@@ -290,58 +286,64 @@ Item {
 
     function dragStarted(w) {
         root.moveStarted[w.internalId.toString()] = w.move;
-        if (w.move)
+        if (w.move) {
             restoreSize(w);
+            // Like Windows 11: the snap bar slides in, collapsed, as soon as
+            // a window is dragged.
+            if (isNormal(w))
+                showBar(screenAt(Workspace.cursorPos) || w.output);
+        }
         if (assist.visible)
             assist.dismiss("new drag");
         assistQueue = [];
     }
 
-    // While moving: at the top edge, open the bar and track the hovered
-    // slot. Cursor right at the top edge but not on a slot means "maximize",
-    // like KDE and Windows do.
+    // Show the collapsed snap bar on screen s (or move it there).
+    function showBar(s) {
+        const a = workArea(s);
+        if (cfg.layoutBar && bar.layoutsFor(a.width).length > 0)
+            bar.showOn(a, s);
+        else
+            bar.hide();
+    }
+
+    // While moving: snap at the side edges and corners, open the bar when
+    // the cursor reaches it and track the zone under it, and maximize right
+    // at the top edge away from the bar, like KDE and Windows do.
     function dragStepped(w) {
         if (!root.moveStarted[w.internalId.toString()] || !isNormal(w))
             return;
         const p = Workspace.cursorPos;
-        const atTop = p.y <= screenArea(w.output).y + topTrigger;
-        // Left and right screen edges (and their corners). These come before
-        // the top edge, so a top corner snaps to a quarter like in Windows.
-        if (!topActive) {
-            const edge = edgeAt(p, w);
-            if (edge) {
-                if (!edgeArmed || edgeArmed.slot.output !== edge.slot.output
-                        || edgeArmed.slot.quickTile !== edge.slot.quickTile)
-                    outline.showAt(edge.slot.rect, workArea(edge.slot.output), w.frameGeometry);
-                edgeArmed = edge;
-                return;
-            }
+        const s = screenAt(p) || w.output;
+        // The bar follows the cursor to another screen.
+        if (bar.visible && bar.output !== s)
+            showBar(s);
+        // Left and right screen edges and their corners come first, also
+        // along the top edge, so a top corner snaps to a quarter like in
+        // Windows instead of maximizing.
+        const edge = edgeAt(p, w);
+        if (edge) {
+            maximizeArmed = false;
+            bar.track(p);
+            if (!edgeArmed || edgeArmed.slot.output !== edge.slot.output
+                    || edgeArmed.slot.quickTile !== edge.slot.quickTile)
+                outline.showAt(edge.slot.rect, workArea(edge.slot.output), w.frameGeometry);
+            edgeArmed = edge;
+            return;
         }
         if (edgeArmed) {
             edgeArmed = null;
             outline.hide();
         }
-        if (!topActive) {
-            if (!atTop)
-                return;
-            topActive = true;
-            topArea = workArea(w.output);
-            if (cfg.layoutBar && bar.layouts.length > 0)
-                bar.showOn(topArea, w.output);
-        }
-        // Anywhere along the top edge keeps the bar (and maximize) alive.
-        if (!atTop && !(bar.visible && bar.isNear(p))) {
-            endTop();
-            return;
-        }
-        if (bar.visible)
-            bar.hitTest(p);
+        bar.track(p);
+        const a = workArea(s);
+        const atTop = p.y <= screenArea(s).y + topTrigger;
         root.maximizeArmed = cfg.maximizeAtTop && atTop && bar.hoveredSlot < 0;
         const outlineWasVisible = outline.visible;
         if (bar.hoveredSlot >= 0)
-            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot), topArea, w.frameGeometry);
+            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot), a, w.frameGeometry);
         else if (root.maximizeArmed)
-            outline.showAt(topArea, topArea, w.frameGeometry);
+            outline.showAt(a, a, w.frameGeometry);
         else
             outline.hide();
         // A freshly shown outline lands on top; keep the bar above it.
@@ -647,8 +649,7 @@ Item {
         return true;
     }
 
-    function endTop() {
-        topActive = false;
+    function endDrag() {
         maximizeArmed = false;
         bar.hide();
         outline.hide();
@@ -670,7 +671,7 @@ Item {
             }
             root.pendingDrop = { "window": w, "slot": bar.slot(li, si), "others": others, "bar": true };
             dropTimer.restart();
-        } else if (topActive && root.maximizeArmed) {
+        } else if (root.maximizeArmed) {
             root.pendingDrop = { "window": w, "maximize": true };
             dropTimer.restart();
         } else if (edgeArmed) {
@@ -682,7 +683,7 @@ Item {
             settleTimer.restart();
         }
         edgeArmed = null;
-        endTop();
+        endDrag();
     }
 
     Instantiator {
@@ -826,6 +827,7 @@ Item {
                 root.arrangeDemo();
             root.log("self test on " + out.name + ": bar");
             bar.showOn(root.workArea(out), out);
+            bar.expanded = true;
             bar.hoveredLayout = bar.layouts.length - 1;
             bar.hoveredSlot = Math.min(1, bar.layouts[bar.hoveredLayout].length - 1);
             outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot), root.workArea(out), null);
@@ -887,6 +889,12 @@ Item {
         id: cfg
     }
 
+    // The overlays, by name (the preview harness in tools/preview uses these).
+    readonly property alias layoutBar: bar
+    readonly property alias dropPreview: outline
+    readonly property alias snapAssist: assist
+    readonly property alias notice: conflictNotice
+
     // Windows 11 look for every overlay; follows the system's light/dark
     // scheme and accent color.
     readonly property alias fluent: fluentTokens
@@ -898,6 +906,7 @@ Item {
     LayoutBar {
         id: bar
         cfg: cfg
+        fluent: fluentTokens
     }
 
     ClickCatcher {
