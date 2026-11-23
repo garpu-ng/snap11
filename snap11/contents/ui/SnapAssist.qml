@@ -321,6 +321,13 @@ PlasmaCore.Dialog {
                                 assist.keyboardNav = false;
                                 assist.currentIndex = card.index;
                             }
+                            // The highlight follows the pointer off the card
+                            // (a keyboard selection stays).
+                            onExited: {
+                                if (!assist.keyboardNav && assist.currentIndex === card.index
+                                        && !closeMouse.containsMouse)
+                                    assist.currentIndex = -1;
+                            }
                             onClicked: assist.picked(card.modelData, assist.slot)
                         }
 

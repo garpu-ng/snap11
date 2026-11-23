@@ -71,6 +71,13 @@ QtObject {
         [300, function() {
             Sim.shot("assist-light");
             Sim.setDark(true);
+            Sim.mouseMove(assist.zone.x + 30, assist.zone.y + 30);
+        }],
+        [200, function() {
+            Sim.checkEq(assist.currentIndex, -1, "the highlight follows the pointer off the cards");
+            Sim.mouseMove(center(assist.cardRect(1)).x, center(assist.cardRect(1)).y);
+        }],
+        [300, function() {
             Sim.key(Qt.Key_Left);
             Sim.key(Qt.Key_Return);
         }],

@@ -250,8 +250,10 @@ Item {
             log("slot already filled, no assist there");
             assistQueue = assistQueue.slice(1);
         }
-        if (assistQueue.length === 0)
+        if (assistQueue.length === 0) {
+            hidePlaceholders();
             return;
+        }
         const slot = assistQueue[0];
         assistQueue = assistQueue.slice(1);
         const cands = candidatesFor(assistPlaced, slot.output);
