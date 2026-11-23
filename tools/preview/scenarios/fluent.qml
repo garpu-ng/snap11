@@ -39,12 +39,12 @@ QtObject {
             Sim.check(Qt.colorEqual(f.textPrimary, "#e4000000"), "light: primary text is black at 89%");
             Sim.check(f.accentFill.hslLightness < blue.hslLightness,
                       "light: accent fill is a darker variant of the accent (" + f.accentFill + ")");
-            Kirigami.Units.longDuration = 0;
+            Kirigami.Units.longDuration = 1;
         }],
         [50, function() {
             const f = Sim.snap.fluent;
-            Sim.checkEq(f.durFast, 0, "animations off in Plasma: no animation");
-            Kirigami.Units.longDuration = 250;
+            Sim.check(f.durFast <= 1, "animations off in Plasma: (next to) no animation: " + f.durFast);
+            Kirigami.Units.longDuration = 200;
         }]
     ]
 }

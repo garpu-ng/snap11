@@ -98,43 +98,6 @@ PlasmaCore.Dialog {
     outputOnly: true
     visible: false
 
-    ParallelAnimation {
-        id: glide
-
-        NumberAnimation {
-            target: outline
-            property: "gx"
-            to: outline.target.x
-            duration: outline.fluent.durNormal
-            easing.type: Easing.Bezier
-            easing.bezierCurve: outline.fluent.pointToPoint
-        }
-        NumberAnimation {
-            target: outline
-            property: "gy"
-            to: outline.target.y
-            duration: outline.fluent.durNormal
-            easing.type: Easing.Bezier
-            easing.bezierCurve: outline.fluent.pointToPoint
-        }
-        NumberAnimation {
-            target: outline
-            property: "gw"
-            to: outline.target.width
-            duration: outline.fluent.durNormal
-            easing.type: Easing.Bezier
-            easing.bezierCurve: outline.fluent.pointToPoint
-        }
-        NumberAnimation {
-            target: outline
-            property: "gh"
-            to: outline.target.height
-            duration: outline.fluent.durNormal
-            easing.type: Easing.Bezier
-            easing.bezierCurve: outline.fluent.pointToPoint
-        }
-    }
-
     Rectangle {
         width: Math.round(outline.gw)
         height: Math.round(outline.gh)
@@ -142,6 +105,45 @@ PlasmaCore.Dialog {
         color: outline.fluent.glassFill
         border.width: 1
         border.color: outline.fluent.glassStroke
+
+        // In here, not next to the Rectangle: a Dialog takes exactly one
+        // Item as its content.
+        ParallelAnimation {
+            id: glide
+
+            NumberAnimation {
+                target: outline
+                property: "gx"
+                to: outline.target.x
+                duration: outline.fluent.durNormal
+                easing.type: Easing.Bezier
+                easing.bezierCurve: outline.fluent.pointToPoint
+            }
+            NumberAnimation {
+                target: outline
+                property: "gy"
+                to: outline.target.y
+                duration: outline.fluent.durNormal
+                easing.type: Easing.Bezier
+                easing.bezierCurve: outline.fluent.pointToPoint
+            }
+            NumberAnimation {
+                target: outline
+                property: "gw"
+                to: outline.target.width
+                duration: outline.fluent.durNormal
+                easing.type: Easing.Bezier
+                easing.bezierCurve: outline.fluent.pointToPoint
+            }
+            NumberAnimation {
+                target: outline
+                property: "gh"
+                to: outline.target.height
+                duration: outline.fluent.durNormal
+                easing.type: Easing.Bezier
+                easing.bezierCurve: outline.fluent.pointToPoint
+            }
+        }
 
         Kirigami.Icon {
             anchors.centerIn: parent

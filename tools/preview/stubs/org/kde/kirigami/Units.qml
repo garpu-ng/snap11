@@ -8,9 +8,12 @@ QtObject {
     property int mediumSpacing: 6
     property int largeSpacing: 8
     property int cornerRadius: 5
-    property int shortDuration: 150
-    property int longDuration: 250
-    property int veryLongDuration: 500
+    // Kirigami 6 / Plasma defaults; Plasma never goes below 1 ms, also
+    // with animations off.
+    property int veryShortDuration: 50
+    property int shortDuration: 100
+    property int longDuration: 200
+    property int veryLongDuration: 400
     property QtObject iconSizes: QtObject {
         property int small: 16
         property int smallMedium: 22

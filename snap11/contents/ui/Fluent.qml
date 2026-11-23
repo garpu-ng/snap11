@@ -77,8 +77,9 @@ Item {
     }
 
     // Motion: Fluent's fast and normal durations, scaled by Plasma's
-    // animation speed (0 when animations are off).
-    readonly property real speed: Kirigami.Units.longDuration / 250
+    // animation speed (Kirigami's longDuration is 200 ms at normal speed,
+    // 1 ms with animations off).
+    readonly property real speed: Kirigami.Units.longDuration / 200
     readonly property int durFast: Math.round(167 * speed)
     readonly property int durNormal: Math.round(250 * speed)
     // Bezier curves for Easing.Bezier: decelerate (things appearing) and

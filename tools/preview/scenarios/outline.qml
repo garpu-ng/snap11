@@ -46,12 +46,12 @@ QtObject {
         [100, function() {
             Sim.check(!preview.visible, "preview hides away from the edges");
             // Plasma's animation speed at "instant".
-            Kirigami.Units.longDuration = 0;
+            Kirigami.Units.longDuration = 1;
             Sim.dragTo(Qt.point(3, 500));
         }],
         [30, function() {
             Sim.checkRect(Sim.geometryOf(preview), zone(Qt.rect(0, 0, 960, 1036)), "without animations the preview is there at once");
-            Kirigami.Units.longDuration = 250;
+            Kirigami.Units.longDuration = 200;
             Sim.dragEnd();
         }],
         [300, function() {

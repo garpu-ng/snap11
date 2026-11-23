@@ -25,15 +25,18 @@ Item {
         property int right: 0
         property int bottom: 0
     }
-    default property alias content: holder.data
+    // Like libplasma's Dialog: the default property is one Item, so a
+    // Dialog with a second (or non-Item) child fails here as it does in KWin.
+    default property Item mainItem: null
     readonly property bool blurBehind: dialog.kwin_blur !== undefined
 
     function raise() { z = Sim.nextZ(); }
     function requestActivate() { active = true; }
 
     visible: false
-    width: holder.children.length > 0 ? holder.children[0].width : 0
-    height: holder.children.length > 0 ? holder.children[0].height : 0
+    width: mainItem ? mainItem.width : 0
+    height: mainItem ? mainItem.height : 0
+    onMainItemChanged: if (mainItem) mainItem.parent = holder
     onVisibleChanged: {
         if (visible)
             z = Sim.nextZ();
