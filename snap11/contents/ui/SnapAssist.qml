@@ -92,7 +92,7 @@ PlasmaCore.Dialog {
     }
 
     function open(s, c) {
-        const area = KWinComponents.Workspace.clientArea(KWinComponents.KWin.MaximizeArea, s.output,
+        const area = KWinComponents.Workspace.clientArea(KWin.MaximizeArea, s.output,
                                                          KWinComponents.Workspace.currentDesktop);
         slot = s;
         zone = fluent.zoneRect(s.rect, area);

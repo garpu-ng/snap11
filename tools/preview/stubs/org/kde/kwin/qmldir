@@ -1,6 +1,5 @@
 module org.kde.kwin
 singleton Workspace 1.0 Workspace.qml
-singleton KWin 1.0 KWin.qml
 singleton Options 1.0 Options.qml
 WindowThumbnail 1.0 WindowThumbnail.qml
 WindowPainting 1.0 WindowPainting.qml

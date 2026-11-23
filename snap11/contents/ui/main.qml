@@ -923,6 +923,7 @@ Item {
     readonly property alias dropPreview: outline
     readonly property alias snapAssist: assist
     readonly property alias notice: conflictNotice
+    readonly property alias clickCatcher: catcher
 
     // Windows 11 look for every overlay; follows the system's light/dark
     // scheme and accent color.
@@ -994,8 +995,18 @@ Item {
     // (shown last) is stacked above them.
     function openAssist(slot, cands, rest) {
         catcher.showAll();
-        showPlaceholders(rest || []);
-        assist.open(slot, cands);
+        try {
+            showPlaceholders(rest || []);
+            assist.open(slot, cands);
+        } catch (e) {
+            console.info("snap11: opening Snap Assist failed: " + e);
+        }
+        // Never leave the invisible click catcher up without the picker:
+        // it would swallow every click on the desktop.
+        if (!assist.visible) {
+            catcher.hide();
+            hidePlaceholders();
+        }
     }
 
     // A click outside the picker: close it, stop the chain, and give the

@@ -13,8 +13,10 @@ Needs PySide6 and a display with OpenGL (run.sh starts Xvfb).
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import (QObject, QPoint, QTimer, QUrl, Property, Qt, Slot,
-                            QtMsgType, qInstallMessageHandler)
+from enum import IntEnum
+
+from PySide6.QtCore import (QEnum, QObject, QPoint, QTimer, QUrl, Property, Qt, Signal,
+                            Slot, QtMsgType, qInstallMessageHandler)
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQuick import QQuickView
 from PySide6.QtTest import QTest
@@ -22,6 +24,49 @@ from PySide6.QtTest import QTest
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 TIMEOUT_MS = 60000
+
+
+class KWinGlobals(QObject):
+    """Stub of KWin's script globals: client area kinds and readConfig().
+
+    In real KWin, "KWin" is not a type of the org.kde.kwin module but a
+    context property that the declarative script engine sets on the
+    script's root context (a C++ object whose enums QML reads off the
+    instance). So `KWin.MaximizeArea` works, while a namespaced
+    `KWinComponents.KWin.MaximizeArea` is undefined. Same here.
+    """
+
+    @QEnum
+    class ClientAreaOption(IntEnum):
+        # Same values as KWin's ClientAreaOption.
+        PlacementArea = 0
+        MovementArea = 1
+        MaximizeArea = 2
+        MaximizeFullArea = 3
+        FullScreenArea = 4
+        WorkArea = 5
+        FullArea = 6
+        ScreenArea = 7
+
+    configChanged = Signal()
+
+    def __init__(self):
+        super().__init__()
+        self._config = {}
+
+    def _get_config(self):
+        return self._config
+
+    def _set_config(self, value):
+        self._config = dict(value or {})
+        self.configChanged.emit()
+
+    # Script options; Sim.setConfig() writes here.
+    config = Property("QVariantMap", _get_config, _set_config, notify=configChanged)
+
+    @Slot(str, "QVariant", result="QVariant")
+    def readConfig(self, key, fallback):
+        return self._config.get(key, fallback)
 
 
 class Runner(QObject):
@@ -97,6 +142,9 @@ def main():
     qInstallMessageHandler(on_message)
     view.engine().addImportPath(str(HERE / "stubs"))
     view.rootContext().setContextProperty("runner", runner)
+    # Like KWin: "KWin" is a context property, not a type of org.kde.kwin.
+    kwin_globals = KWinGlobals()
+    view.rootContext().setContextProperty("KWin", kwin_globals)
     view.setResizeMode(QQuickView.SizeRootObjectToView)
     view.resize(1920, 1080)
     view.setSource(QUrl.fromLocalFile(str(HERE / "Scene.qml")))
