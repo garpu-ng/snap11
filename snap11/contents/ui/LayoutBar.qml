@@ -18,7 +18,7 @@
  * the bar's surface grows and shrinks inside it.
  */
 import QtQuick
-import QtQuick.Effects
+import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 
 PlasmaCore.Dialog {
@@ -271,28 +271,17 @@ PlasmaCore.Dialog {
             }
 
             // Flyout surface: Windows' acrylic is nearly opaque, so no blur
-            // is needed; the shadow is drawn here.
-            Rectangle {
-                id: background
-
+            // is needed; the shadow is drawn here (Kirigami's, so no extra
+            // Qt module is needed).
+            Kirigami.ShadowedRectangle {
                 anchors.fill: parent
                 radius: bar.fluent.overlayRadius
                 color: bar.fluent.flyoutFill
                 border.width: 1
                 border.color: bar.fluent.flyoutStroke
-                visible: false
-                layer.enabled: true
-            }
-
-            MultiEffect {
-                anchors.fill: background
-                source: background
-                autoPaddingEnabled: true
-                shadowEnabled: true
-                shadowColor: bar.fluent.shadowColor
-                shadowBlur: 1.0
-                shadowVerticalOffset: 8
-                blurMax: 32
+                shadow.size: 24
+                shadow.yOffset: 8
+                shadow.color: bar.fluent.shadowColor
             }
 
             // The layouts, revealed from the middle as the bar opens.

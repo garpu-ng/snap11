@@ -8,7 +8,6 @@
  * top, a close button that shows on hover, a semibold title and the text.
  */
 import QtQuick
-import QtQuick.Effects
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 
@@ -72,9 +71,8 @@ PlasmaCore.Dialog {
         width: notice.toastWidth + 2 * notice.shadowMargin
         height: toast.height + 2 * notice.shadowMargin
 
-        Rectangle {
-            id: background
-
+        // Kirigami's shadowed rectangle, so no extra Qt module is needed.
+        Kirigami.ShadowedRectangle {
             x: notice.shadowMargin
             y: notice.shadowMargin
             width: notice.toastWidth
@@ -83,19 +81,9 @@ PlasmaCore.Dialog {
             color: notice.fluent.flyoutFill
             border.width: 1
             border.color: notice.fluent.flyoutStroke
-            visible: false
-            layer.enabled: true
-        }
-
-        MultiEffect {
-            anchors.fill: background
-            source: background
-            autoPaddingEnabled: true
-            shadowEnabled: true
-            shadowColor: notice.fluent.shadowColor
-            shadowBlur: 1.0
-            shadowVerticalOffset: 8
-            blurMax: 32
+            shadow.size: 24
+            shadow.yOffset: 8
+            shadow.color: notice.fluent.shadowColor
         }
 
         Item {
