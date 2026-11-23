@@ -172,6 +172,19 @@ Item {
         log("  now at " + w.frameGeometry.x + "," + w.frameGeometry.y + " on " + w.output.name);
     }
 
+    // KWin maximizes a window on the screen under its center. Bring it
+    // over to screen s first (centered, at its own size), so it maximizes
+    // where the preview was.
+    function moveToScreen(w, s) {
+        if (!s || w.output === s)
+            return;
+        const a = workArea(s);
+        const g = w.frameGeometry;
+        const ww = Math.min(g.width, a.width);
+        const wh = Math.min(g.height, a.height);
+        w.frameGeometry = Qt.rect(Math.round(a.x + (a.width - ww) / 2), Math.round(a.y + (a.height - wh) / 2), ww, wh);
+    }
+
     // Size of each window before we snapped it, keyed by internalId:
     // { width, height, rect } where rect is the slot it was snapped to.
     // Dragging the window out of that slot gives it its old size back.
@@ -683,7 +696,9 @@ Item {
             root.pendingDrop = { "window": w, "slot": bar.slot(li, si), "others": others, "bar": true };
             dropTimer.restart();
         } else if (root.maximizeArmed) {
-            root.pendingDrop = { "window": w, "maximize": true };
+            // Maximize on the screen the preview showed: the cursor's.
+            root.pendingDrop = { "window": w, "maximize": true,
+                                 "output": screenAt(Workspace.cursorPos) || w.output };
             dropTimer.restart();
         } else if (edgeArmed) {
             root.pendingDrop = { "window": w, "slot": edgeArmed.slot, "others": edgeArmed.others,
@@ -740,6 +755,7 @@ Item {
                 root.log("maximizing '" + d.window.caption + "'");
                 if (d.window.tile)
                     d.window.tile = null;
+                root.moveToScreen(d.window, d.output);
                 d.window.setMaximize(true, true);
                 return;
             }

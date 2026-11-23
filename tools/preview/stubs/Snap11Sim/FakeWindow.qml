@@ -9,7 +9,9 @@ QtObject {
     property string resourceClass: "demo"
     property color color: "#3b6ea5"
     property rect frameGeometry
-    property var output: Workspace.screen
+    // Like KWin: the screen under the frame's center.
+    readonly property var output: Workspace.outputAt(Qt.point(frameGeometry.x + frameGeometry.width / 2,
+                                                              frameGeometry.y + frameGeometry.height / 2))
     property var tile: null
     property bool normalWindow: true
     property bool skipTaskbar: false

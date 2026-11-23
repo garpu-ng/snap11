@@ -13,7 +13,21 @@ QtObject {
         property rect geometry: Qt.rect(0, 0, 1920, 1080)
     }
     property var screens: [screen]
-    property rect virtualScreenGeometry: Qt.rect(0, 0, 1920, 1080)
+    readonly property rect virtualScreenGeometry: {
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (let i = 0; i < screens.length; i++) {
+            const g = screens[i].geometry;
+            x0 = Math.min(x0, g.x); y0 = Math.min(y0, g.y);
+            x1 = Math.max(x1, g.x + g.width); y1 = Math.max(y1, g.y + g.height);
+        }
+        return Qt.rect(x0, y0, x1 - x0, y1 - y0);
+    }
+    property Component screenComponent: Component {
+        QtObject {
+            property string name
+            property rect geometry
+        }
+    }
     property string currentDesktop: "desktop-1"
     // Bottom to top, like KWin.
     property var stackingOrder: []
@@ -31,6 +45,24 @@ QtObject {
         if (w && stackingOrder.indexOf(w) >= 0)
             stackingOrder = stackingOrder.filter(function(x) { return x !== w; }).concat([w]);
         windowActivated(w);
+    }
+
+    // Another screen (Sim.addScreen).
+    function addScreen(name, geometry) {
+        const s = screenComponent.createObject(ws, { "name": name, "geometry": geometry });
+        screens = screens.concat([s]);
+        return s;
+    }
+
+    // The screen a window belongs to, as in KWin: the one under the center
+    // of its frame (else the first).
+    function outputAt(p) {
+        for (let i = 0; i < screens.length; i++) {
+            const g = screens[i].geometry;
+            if (p.x >= g.x && p.x < g.x + g.width && p.y >= g.y && p.y < g.y + g.height)
+                return screens[i];
+        }
+        return screens[0];
     }
 
     function clientArea(kind, output, desktop) {

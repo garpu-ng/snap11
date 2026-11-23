@@ -64,7 +64,9 @@ class Runner(QObject):
 
     @Slot(int, int)
     def mouseMove(self, x, y):
-        QTest.mouseMove(self.view, QPoint(x, y))
+        # Only the first screen is on the virtual display.
+        if 0 <= x < self.view.width() and 0 <= y < self.view.height():
+            QTest.mouseMove(self.view, QPoint(x, y))
 
     @Slot(int, int)
     def click(self, x, y):

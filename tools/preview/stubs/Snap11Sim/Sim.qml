@@ -116,6 +116,10 @@ QtObject {
         return Qt.rect(dialog.x, dialog.y, dialog.width, dialog.height);
     }
 
+    function addScreen(name, geometry) {
+        return Workspace.addScreen(name, geometry);
+    }
+
     // System colors: Breeze Dark or Breeze Light.
     function setDark(dark) {
         Kirigami.Theme.backgroundColor = dark ? "#202326" : "#eff0f1";
