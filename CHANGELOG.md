@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.4.0 (2026-11-23)
+
+Back to the Windows 11 look and feel, 1:1.
+
+- Everything is drawn like Windows 11 (Fluent): frosted glass, rounded
+  corners, Windows' hover, pressed and focus states, Windows' motion.
+  Light or dark and the accent color follow your system settings, like
+  in Windows. The Plasma theme frames from 1.3 are gone.
+- Snap bar like Windows 11: as soon as you drag a window, a small bar
+  slides in at the top center; drag onto it and it opens with the
+  layouts. The zone under the cursor fills with the accent color.
+- Windows' layouts in Windows' order, on by default: 50/50, 66/33,
+  33/33/33, half + two quarters (new), quarters, 25/50/25 (new).
+  Three-column layouts only on screens 1920 px and wider, like Windows
+  (option). One third + two thirds stays as an extra, off by default.
+- Drop preview: floating frosted glass with the app's icon, inset from
+  the screen edges, growing out of the window and gliding between zones.
+- Snap Assist: cards like Windows 11 (icon and title on top, thumbnail
+  below, close button turning red), Windows' focus rectangle for the
+  keyboard, cards fade in, and the zones still to fill show as empty
+  placeholders.
+- The notice about KDE's own edge snapping is a Windows 11 toast.
+- Fixed: dragging along the top edge into a corner maximized the window;
+  it now snaps to that quarter.
+- Halves + quarters layouts use KDE quick tiles.
+- Settings: "Layout preview height" is gone (the layouts take the
+  screen's shape); the layout width defaults to 80 px.
+- New for developers: tools/preview runs the QML without KWin for tests
+  and screenshots.
+
 ## 1.3.0 (2026-11-11)
 
 Snap11 now looks like it is part of Plasma, and follows your theme.
