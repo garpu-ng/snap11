@@ -1054,6 +1054,7 @@ Item {
 
     ConflictNotice {
         id: conflictNotice
+        fluent: fluentTokens
     }
 
     // KDE's own "drag to top edge maximizes" and "drag to side tiles" would

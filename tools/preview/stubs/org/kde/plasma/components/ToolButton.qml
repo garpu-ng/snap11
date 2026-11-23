@@ -1,2 +1,0 @@
-import QtQuick.Controls
-ToolButton {}

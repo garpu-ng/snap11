@@ -2,4 +2,3 @@ module org.kde.kirigami
 singleton Theme 1.0 Theme.qml
 singleton Units 1.0 Units.qml
 Icon 1.0 Icon.qml
-Heading 1.0 Heading.qml
