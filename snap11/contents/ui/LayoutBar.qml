@@ -36,6 +36,9 @@ PlasmaCore.Dialog {
     // The zone under the cursor, -1 for none.
     property int hoveredLayout: -1
     property int hoveredSlot: -1
+    // KDE's quick tile split on this screen (main.qml quickSplit): zones
+    // that are KDE quick tiles land there, so they are measured there.
+    property point quickSplit: Qt.point(0.5, 0.5)
 
     // Layouts offered on this screen.
     readonly property var layouts: layoutsFor(area.width)
@@ -207,10 +210,13 @@ PlasmaCore.Dialog {
     // Zone si of layout li as a screen rect inside the bar's work area.
     function slotRect(li, si) {
         const s = layouts[li][si];
-        const x0 = Math.round(area.x + s.x * area.width);
-        const x1 = Math.round(area.x + (s.x + s.w) * area.width);
-        const y0 = Math.round(area.y + s.y * area.height);
-        const y1 = Math.round(area.y + (s.y + s.h) * area.height);
+        // A quick tile zone's inner edges (at 1/2) are KDE's split.
+        const fx = function(v) { return s.quickTile && Math.abs(v - 0.5) < 0.001 ? quickSplit.x : v; };
+        const fy = function(v) { return s.quickTile && Math.abs(v - 0.5) < 0.001 ? quickSplit.y : v; };
+        const x0 = Math.round(area.x + fx(s.x) * area.width);
+        const x1 = Math.round(area.x + fx(s.x + s.w) * area.width);
+        const y0 = Math.round(area.y + fy(s.y) * area.height);
+        const y1 = Math.round(area.y + fy(s.y + s.h) * area.height);
         return Qt.rect(x0, y0, x1 - x0, y1 - y0);
     }
 

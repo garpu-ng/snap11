@@ -72,26 +72,76 @@ QtObject {
         return Qt.rect(g.x, g.y, g.width, g.height - panelHeight);
     }
 
+    // KDE's quick tile layout per screen and desktop, like KWin's
+    // QuickRootTile: KDE remembers where the user dragged the split between
+    // two quick tiled windows, and later quick tiles use that split. A
+    // script reaches the root only through a quick tiled window
+    // (window.tile.parent). Children in KWin's order: left, right, top,
+    // bottom, topLeft, topRight, bottomLeft, bottomRight.
+    property var quickRoots: ({})
+    readonly property var quickModes: ["left", "right", "top", "bottom",
+                                       "topLeft", "topRight", "bottomLeft", "bottomRight"]
+
+    function quickRoot(output) {
+        const o = output || screen;
+        const key = o.name + "/" + currentDesktop;
+        let root = quickRoots[key];
+        if (!root) {
+            root = { "output": o, "split": Qt.point(0.5, 0.5), "tiles": [] };
+            for (let i = 0; i < quickModes.length; i++)
+                root.tiles.push({ "parent": root, "mode": quickModes[i], "padding": 0,
+                                  "resizeByPixels": function(delta, edge) {} });
+            quickRoots[key] = root;
+            layoutQuickRoot(root);
+        }
+        return root;
+    }
+
+    // Relative and absolute geometry of every child, from the split.
+    function layoutQuickRoot(root) {
+        const a = clientArea(2, root.output, currentDesktop);
+        const fx = root.split.x, fy = root.split.y;
+        const rel = {
+            "left": Qt.rect(0, 0, fx, 1), "right": Qt.rect(fx, 0, 1 - fx, 1),
+            "top": Qt.rect(0, 0, 1, fy), "bottom": Qt.rect(0, fy, 1, 1 - fy),
+            "topLeft": Qt.rect(0, 0, fx, fy), "topRight": Qt.rect(fx, 0, 1 - fx, fy),
+            "bottomLeft": Qt.rect(0, fy, fx, 1 - fy), "bottomRight": Qt.rect(fx, fy, 1 - fx, 1 - fy)
+        };
+        root.absoluteGeometry = a;
+        for (let i = 0; i < root.tiles.length; i++) {
+            const t = root.tiles[i];
+            const r = rel[t.mode];
+            const x0 = Math.round(a.x + r.x * a.width), x1 = Math.round(a.x + (r.x + r.width) * a.width);
+            const y0 = Math.round(a.y + r.y * a.height), y1 = Math.round(a.y + (r.y + r.height) * a.height);
+            t.relativeGeometry = r;
+            t.absoluteGeometry = Qt.rect(x0, y0, x1 - x0, y1 - y0);
+        }
+    }
+
+    // Like dragging KDE's resize handle between quick tiled windows: move
+    // the split (fractions of the work area) and refit the tiled windows.
+    function setQuickSplit(output, fx, fy) {
+        const root = quickRoot(output);
+        root.split = Qt.point(fx, fy);
+        layoutQuickRoot(root);
+        for (let i = 0; i < stackingOrder.length; i++) {
+            const w = stackingOrder[i];
+            if (w.tile && w.tile.parent === root)
+                w.frameGeometry = w.tile.absoluteGeometry;
+        }
+    }
+
     // Quick tiling, as KWin does it: the active window fills that part of
-    // its screen's work area and gets a (quick) tile.
+    // its screen's work area (at KDE's split) and gets that quick tile.
     function quickTile(mode) {
         quickTileCalls = quickTileCalls.concat([mode]);
         const w = activeWindow;
         if (!w)
             return;
-        const a = clientArea(2, w.output, currentDesktop);
-        const lw = Math.round(a.width / 2), th = Math.round(a.height / 2);
-        const r = {
-            "left": Qt.rect(a.x, a.y, lw, a.height),
-            "right": Qt.rect(a.x + lw, a.y, a.width - lw, a.height),
-            "topLeft": Qt.rect(a.x, a.y, lw, th),
-            "topRight": Qt.rect(a.x + lw, a.y, a.width - lw, th),
-            "bottomLeft": Qt.rect(a.x, a.y + th, lw, a.height - th),
-            "bottomRight": Qt.rect(a.x + lw, a.y + th, a.width - lw, a.height - th)
-        }[mode];
-        w.frameGeometry = r;
-        w.tile = { "absoluteGeometry": r, "padding": 0, "quickTileMode": mode,
-                   "resizeByPixels": function(delta, edge) {} };
+        const root = quickRoot(w.output);
+        const t = root.tiles[quickModes.indexOf(mode)];
+        w.frameGeometry = t.absoluteGeometry;
+        w.tile = t;
     }
 
     function slotWindowQuickTileLeft() { quickTile("left"); }

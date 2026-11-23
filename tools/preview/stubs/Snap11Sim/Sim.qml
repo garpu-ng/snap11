@@ -116,6 +116,11 @@ QtObject {
         return Qt.rect(dialog.x, dialog.y, dialog.width, dialog.height);
     }
 
+    // Like dragging KDE's resize handle between two quick tiled windows.
+    function setQuickSplit(output, fx, fy) {
+        Workspace.setQuickSplit(output, fx, fy);
+    }
+
     function addScreen(name, geometry) {
         return Workspace.addScreen(name, geometry);
     }

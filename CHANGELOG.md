@@ -7,9 +7,14 @@
   click catcher over all screens was already up and stayed there,
   swallowing every click. Snap Assist opens again, and the click catcher
   never stays without it.
+- Fixed: after moving the split between two snapped halves, the drop
+  preview still showed 50/50 while the window landed at KDE's split.
+  Halves, corner quarters and the snap bar's halves and quarters zones
+  now follow KDE's split.
 - For developers: the preview harness now provides `KWin` like KWin does
   (a global object, not part of the org.kde.kwin module), so this kind of
-  error shows up in the tests. New scenario: catcher.
+  error shows up in the tests. Quick tiles in the harness keep KDE's split.
+  New scenarios: catcher, split.
 
 ## 1.4.0 (2026-11-23)
 

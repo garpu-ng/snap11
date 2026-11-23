@@ -90,8 +90,59 @@ Item {
         return Workspace.clientArea(KWin.ScreenArea, output, Workspace.currentDesktop);
     }
 
-    function halves(area) {
-        const lw = Math.round(area.width / 2);
+    // KDE's quick tile layout (QuickRootTile) per screen and desktop. KDE
+    // remembers where the user dragged the split between two quick tiled
+    // windows, and every later quick tile uses it. A script reaches the
+    // root only through a quick tiled window (window.tile.parent), so we
+    // keep each one we have seen.
+    property var quickRoots: ({})
+
+    function quickKey(output) {
+        const d = Workspace.currentDesktop;
+        return output.name + "/" + (d && d.id !== undefined ? d.id : d);
+    }
+
+    function noteQuickTile(w) {
+        if (isQuickTiled(w) && w.tile.parent && w.output)
+            quickRoots[quickKey(w.output)] = w.tile.parent;
+    }
+
+    // KDE's split on a screen as fractions of its work area, Qt.point(x, y);
+    // 0.5 (KDE's default) until we have seen a quick tile there.
+    function quickSplit(output) {
+        const split = Qt.point(0.5, 0.5);
+        if (!output)
+            return split;
+        const stack = Workspace.stackingOrder;
+        for (let i = 0; i < stack.length; i++) {
+            if (stack[i].output === output && onCurrentDesktop(stack[i]))
+                noteQuickTile(stack[i]);
+        }
+        const root = quickRoots[quickKey(output)];
+        try {
+            const kids = root ? root.tiles || [] : [];
+            // The left half (full height, at x 0) ends at the vertical
+            // split; the top half (full width, at y 0) at the horizontal one.
+            for (let i = 0; i < kids.length; i++) {
+                const r = kids[i].relativeGeometry;
+                if (!r || r.x > 0.001 || r.y > 0.001)
+                    continue;
+                if (r.height > 0.999 && r.width > 0.05 && r.width < 0.95)
+                    split.x = r.width;
+                else if (r.width > 0.999 && r.height > 0.05 && r.height < 0.95)
+                    split.y = r.height;
+            }
+        } catch (e) {
+            // The root went away with its screen.
+            delete quickRoots[quickKey(output)];
+        }
+        return split;
+    }
+
+    // Left and right half of work area a, split where KDE would quick tile
+    // (see quickSplit) when the screen is given.
+    function halves(area, output) {
+        const lw = Math.round(area.width * quickSplit(output).x);
         return {
             "left": Qt.rect(area.x, area.y, lw, area.height),
             "right": Qt.rect(area.x + lw, area.y, area.width - lw, area.height)
@@ -272,7 +323,7 @@ Item {
     function checkSnapped(w) {
         if (!cfg.edgeAssist || !isNormal(w))
             return;
-        const h = halves(workArea(w.output));
+        const h = halves(workArea(w.output), w.output);
         const g = w.frameGeometry;
         let slot = null;
         if (matches(g, h.left))
@@ -321,8 +372,10 @@ Item {
     // Show the collapsed snap bar on screen s (or move it there).
     function showBar(s) {
         const a = workArea(s);
-        if (cfg.layoutBar && bar.layoutsFor(a.width).length > 0)
+        if (cfg.layoutBar && bar.layoutsFor(a.width).length > 0) {
+            bar.quickSplit = quickSplit(s);
             bar.showOn(a, s);
+        }
         else
             bar.hide();
     }
@@ -408,9 +461,10 @@ Item {
     // How far (px) from the top or bottom a side edge counts as a corner.
     readonly property int cornerZone: 80
 
-    function quarters(area) {
-        const lw = Math.round(area.width / 2);
-        const th = Math.round(area.height / 2);
+    function quarters(area, output) {
+        const split = quickSplit(output);
+        const lw = Math.round(area.width * split.x);
+        const th = Math.round(area.height * split.y);
         return {
             "topLeft": Qt.rect(area.x, area.y, lw, th),
             "topRight": Qt.rect(area.x + lw, area.y, area.width - lw, th),
@@ -449,7 +503,7 @@ Item {
                 row = "bottom";
         }
         if (row) {
-            const q = quarters(a);
+            const q = quarters(a, s);
             const key = row + (side === "left" ? "Left" : "Right");
             const others = [];
             for (const k of ["topLeft", "topRight", "bottomLeft", "bottomRight"]) {
@@ -458,7 +512,7 @@ Item {
             }
             return { "slot": { "rect": q[key], "quickTile": key, "output": s }, "others": others };
         }
-        const h = halves(a);
+        const h = halves(a, s);
         const other = side === "left" ? "right" : "left";
         // Like Windows: next to a window already snapped on the other side,
         // take exactly the space it leaves, and offer nothing afterwards.
@@ -728,6 +782,9 @@ Item {
             function onInteractiveMoveResizeFinished() {
                 root.dragFinished(modelData);
             }
+            function onTileChanged() {
+                root.noteQuickTile(modelData);
+            }
         }
     }
 
@@ -814,7 +871,7 @@ Item {
     function arrangeDemo() {
         const out = selfTestScreen();
         const a = workArea(out);
-        const h = halves(a);
+        const h = halves(a, out);
         const wins = selfTestCandidates([]);
         const byClass = {};
         for (let i = 0; i < wins.length; i++) {
@@ -873,7 +930,7 @@ Item {
             bar.hide();
             outline.hide();
             const out = root.selfTestScreen();
-            const h = root.halves(root.workArea(out));
+            const h = root.halves(root.workArea(out), out);
             const all = root.selfTestCandidates([]);
             // Demo: the first demo class goes left; otherwise the topmost
             // window on that screen.
@@ -900,7 +957,7 @@ Item {
         property var anchor: null
         interval: 400
         onTriggered: {
-            const h = root.halves(root.workArea(root.selfTestScreen()));
+            const h = root.halves(root.workArea(root.selfTestScreen()), root.selfTestScreen());
             root.openAssist({ "rect": h.right, "quickTile": "right", "output": root.selfTestScreen() },
                         root.selfTestCandidates(anchor ? [anchor] : []));
             assist.currentIndex = 0; // show the hover look
