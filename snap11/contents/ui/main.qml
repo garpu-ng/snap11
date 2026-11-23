@@ -321,14 +321,16 @@ Item {
         // Left and right screen edges and their corners come first, also
         // along the top edge, so a top corner snaps to a quarter like in
         // Windows instead of maximizing.
+        const outlineWasVisible = outline.visible;
         const edge = edgeAt(p, w);
         if (edge) {
             maximizeArmed = false;
             bar.track(p);
             if (!edgeArmed || edgeArmed.slot.output !== edge.slot.output
                     || edgeArmed.slot.quickTile !== edge.slot.quickTile)
-                outline.showAt(edge.slot.rect, workArea(edge.slot.output), w.frameGeometry);
+                outline.showAt(edge.slot.rect, workArea(edge.slot.output), w.frameGeometry, w.icon);
             edgeArmed = edge;
+            keepBarOnTop(outlineWasVisible);
             return;
         }
         if (edgeArmed) {
@@ -339,14 +341,18 @@ Item {
         const a = workArea(s);
         const atTop = p.y <= screenArea(s).y + topTrigger;
         root.maximizeArmed = cfg.maximizeAtTop && atTop && bar.hoveredSlot < 0;
-        const outlineWasVisible = outline.visible;
         if (bar.hoveredSlot >= 0)
-            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot), a, w.frameGeometry);
+            outline.showAt(bar.slotRect(bar.hoveredLayout, bar.hoveredSlot), a, w.frameGeometry, w.icon);
         else if (root.maximizeArmed)
-            outline.showAt(a, a, w.frameGeometry);
+            outline.showAt(a, a, w.frameGeometry, w.icon);
         else
             outline.hide();
-        // A freshly shown outline lands on top; keep the bar above it.
+        keepBarOnTop(outlineWasVisible);
+    }
+
+    // A freshly shown outline lands on top; keep the bar above it, like
+    // Windows.
+    function keepBarOnTop(outlineWasVisible) {
         if (outline.visible && !outlineWasVisible && bar.visible)
             bar.bringToFront();
     }
@@ -914,11 +920,10 @@ Item {
         onClicked: function(pos) { root.catcherClicked(pos); }
     }
 
-    // The overlays take their look from the Plasma theme; blur, contrast
-    // and shadow come with the theme's dialog frame.
     SlotOutline {
         id: outline
         cfg: cfg
+        fluent: fluentTokens
     }
 
     SnapAssist {
