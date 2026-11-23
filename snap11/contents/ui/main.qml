@@ -887,6 +887,14 @@ Item {
         id: cfg
     }
 
+    // Windows 11 look for every overlay; follows the system's light/dark
+    // scheme and accent color.
+    readonly property alias fluent: fluentTokens
+
+    Fluent {
+        id: fluentTokens
+    }
+
     LayoutBar {
         id: bar
         cfg: cfg
