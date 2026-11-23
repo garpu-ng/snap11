@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.1 (2026-11-23)
+
+- Fixed: after snapping a window to a half or a layout zone, the mouse
+  stopped working. Snap Assist failed to open in KWin, but its invisible
+  click catcher over all screens was already up and stayed there,
+  swallowing every click. Snap Assist opens again, and the click catcher
+  never stays without it.
+- For developers: the preview harness now provides `KWin` like KWin does
+  (a global object, not part of the org.kde.kwin module), so this kind of
+  error shows up in the tests. New scenario: catcher.
+
 ## 1.4.0 (2026-11-23)
 
 Back to the Windows 11 look and feel, 1:1.

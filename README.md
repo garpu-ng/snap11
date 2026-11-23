@@ -69,7 +69,7 @@ for "Snap11" > Install. Then tick Snap11 and click Apply.
 **From a release file:**
 
 ```bash
-kpackagetool6 --type KWin/Script --install snap11-1.4.0.kwinscript
+kpackagetool6 --type KWin/Script --install snap11-1.4.1.kwinscript
 ```
 
 Then enable it under System Settings > Window Management > KWin Scripts.
@@ -77,7 +77,7 @@ Then enable it under System Settings > Window Management > KWin Scripts.
 **Update an existing install:**
 
 ```bash
-kpackagetool6 --type KWin/Script --upgrade snap11-1.4.0.kwinscript
+kpackagetool6 --type KWin/Script --upgrade snap11-1.4.1.kwinscript
 ```
 
 Log out and back in after an update. KWin keeps the old version in memory
