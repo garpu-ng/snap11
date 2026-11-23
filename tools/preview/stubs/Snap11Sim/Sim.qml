@@ -76,10 +76,12 @@ QtObject {
         }
     }
 
+    // The pointer is where the window was dropped, also for the overlays.
     function dragEnd() {
         const w = dragging;
         dragging = null;
         w.move = false;
+        runner.mouseMove(Workspace.cursorPos.x, Workspace.cursorPos.y);
         w.interactiveMoveResizeFinished();
     }
 

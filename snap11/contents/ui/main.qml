@@ -243,10 +243,14 @@ Item {
         assistQueue = assistQueue.slice(1);
         const cands = candidatesFor(assistPlaced, slot.output);
         log("assist for next slot, " + cands.length + " candidates, " + assistQueue.length + " slots after this");
-        if (cands.length > 0)
-            openAssist(slot, cands);
-        else
+        if (cands.length > 0) {
+            // Like Windows, the zones still to fill after this one show as
+            // empty placeholders.
+            openAssist(slot, cands, assistQueue.filter(function(s) { return !slotFilled(s); }));
+        } else {
             assistQueue = [];
+            hidePlaceholders();
+        }
     }
 
     // Called shortly after a drag ended: did the window land in a half?
@@ -296,6 +300,7 @@ Item {
         if (assist.visible)
             assist.dismiss("new drag");
         assistQueue = [];
+        hidePlaceholders();
     }
 
     // Show the collapsed snap bar on screen s (or move it there).
@@ -929,6 +934,7 @@ Item {
     SnapAssist {
         id: assist
         cfg: cfg
+        fluent: fluentTokens
         onPicked: function(w, slot) { root.assistPicked(w, slot); }
         onVisibleChanged: root.assistVisibleChanged(visible)
     }
@@ -941,10 +947,36 @@ Item {
             assistNextTimer.restart();
     }
 
-    // Show the click catcher first, so the picker (shown second) is
-    // stacked above it.
-    function openAssist(slot, cands) {
+    // Empty zones still to fill, shown while Snap Assist fills another one.
+    Instantiator {
+        id: placeholderList
+        model: 3
+        delegate: ZonePlaceholder {
+            fluent: fluentTokens
+        }
+    }
+
+    readonly property alias placeholders: placeholderList
+
+    function showPlaceholders(slots) {
+        for (let i = 0; i < placeholderList.count; i++) {
+            const ph = placeholderList.objectAt(i);
+            if (i < slots.length)
+                ph.show(slots[i], workArea(slots[i].output));
+            else
+                ph.hide();
+        }
+    }
+
+    function hidePlaceholders() {
+        showPlaceholders([]);
+    }
+
+    // Show the click catcher first, then the placeholders, so the picker
+    // (shown last) is stacked above them.
+    function openAssist(slot, cands, rest) {
         catcher.showAll();
+        showPlaceholders(rest || []);
         assist.open(slot, cands);
     }
 
@@ -972,8 +1004,10 @@ Item {
             catcher.hide();
         if (!visible && !assistNextTimer.running)
             Qt.callLater(function() {
-                if (!assist.visible && !assistNextTimer.running)
+                if (!assist.visible && !assistNextTimer.running) {
                     root.assistQueue = [];
+                    root.hidePlaceholders();
+                }
             });
     }
 
